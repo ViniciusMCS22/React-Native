@@ -5,7 +5,7 @@ export default function InsumoDetalhe() {
   return (
     <Placeholder
       titulo="Detalhe do insumo"
-      descricao="Composicoes em que o material participa, coeficiente, perda, memoria de calculo e historico de compras."
+      descricao="Composições em que o material participa, coeficiente, perda, memória de cálculo e histórico de compras."
       versaoPrevista="0.2.0"
     />
   );

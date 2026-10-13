@@ -1,6 +1,7 @@
 // src/screens/Obras/styles.js
 import { StyleSheet } from 'react-native';
 import { cores } from '../../theme/cores';
+import { espacos, raios } from '../../theme/medidas';
 
 export const styles = StyleSheet.create({
   lista: {
@@ -12,28 +13,28 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   conteudo: {
-    padding: 16,
-    gap: 12,
+    padding: espacos.lg,
+    gap: espacos.md,
   },
   introducao: {
     fontSize: 14,
     lineHeight: 20,
     color: cores.textoFraco,
-    marginBottom: 4,
+    marginBottom: espacos.xs,
   },
   vazio: {
     fontSize: 15,
     color: cores.textoFraco,
-    paddingVertical: 32,
+    paddingVertical: espacos.xxxl,
   },
   cartao: {
     minHeight: 44,
-    padding: 16,
-    borderRadius: 8,
+    padding: espacos.lg,
+    borderRadius: raios.md,
     borderWidth: 1,
     borderColor: cores.borda,
     backgroundColor: cores.fundo,
-    gap: 2,
+    gap: espacos.xxs,
   },
   cartaoAtivo: {
     borderColor: cores.grafite,
@@ -44,7 +45,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 4,
+    marginBottom: espacos.xs,
   },
   nome: {
     fontSize: 17,
@@ -55,10 +56,10 @@ export const styles = StyleSheet.create({
   marcaAtiva: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
+    gap: espacos.xs,
+    paddingHorizontal: espacos.sm,
+    paddingVertical: espacos.xs,
+    borderRadius: raios.sm,
     backgroundColor: cores.borda,
   },
   marcaAtivaTexto: {
@@ -74,6 +75,26 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: cores.texto,
-    marginTop: 4,
+    marginTop: espacos.xs,
+  },
+  botaoAtivar: {
+    flexDirection: 'row',
+    alignSelf: 'flex-start',
+    alignItems: 'center',
+    gap: espacos.xs,
+    minHeight: 40,
+    marginTop: espacos.sm,
+    paddingHorizontal: espacos.md,
+    borderRadius: raios.md,
+    borderWidth: 1,
+    borderColor: cores.grafite,
+  },
+  botaoAtivarPressionado: {
+    backgroundColor: cores.fundoAlternativo,
+  },
+  botaoAtivarTexto: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: cores.grafite,
   },
 });

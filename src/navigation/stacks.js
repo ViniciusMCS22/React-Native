@@ -12,6 +12,9 @@ import Insumos from '../screens/Insumos';
 import InsumoDetalhe from '../screens/InsumoDetalhe';
 import Aquisicoes from '../screens/Aquisicoes';
 import Mais from '../screens/Mais';
+import Login from '../screens/Login';
+import LegendaIndicadores from '../screens/LegendaIndicadores';
+import Sobre from '../screens/Sobre';
 
 const opcoesPadrao = {
   headerStyle: { backgroundColor: cores.fundo },
@@ -28,7 +31,7 @@ export function InicioStack() {
       <StackInicio.Screen
         name="InicioPainel"
         component={Inicio}
-        options={{ title: 'Inicio' }}
+        options={{ title: 'Início' }}
       />
     </StackInicio.Navigator>
   );
@@ -77,7 +80,7 @@ export function AquisicoesStack() {
       <StackAquisicoes.Screen
         name="AquisicoesLista"
         component={Aquisicoes}
-        options={{ title: 'Aquisicoes' }}
+        options={{ title: 'Aquisições' }}
       />
     </StackAquisicoes.Navigator>
   );
@@ -90,8 +93,28 @@ export function MaisStack() {
       <StackMais.Screen
         name="MaisLista"
         component={Mais}
-        options={{ title: 'Mais' }}
+        options={{ title: 'Configurações' }}
+      />
+      <StackMais.Screen
+        name="LegendaIndicadores"
+        component={LegendaIndicadores}
+        options={{ title: 'Legenda dos indicadores' }}
+      />
+      <StackMais.Screen
+        name="Sobre"
+        component={Sobre}
+        options={{ title: 'Sobre' }}
       />
     </StackMais.Navigator>
+  );
+}
+
+// Telas antes do login. Hoje so o Login; depois entram "Esqueci a senha" etc.
+const StackAuth = createNativeStackNavigator();
+export function AuthStack() {
+  return (
+    <StackAuth.Navigator screenOptions={{ ...opcoesPadrao, headerShown: false }}>
+      <StackAuth.Screen name="Login" component={Login} />
+    </StackAuth.Navigator>
   );
 }

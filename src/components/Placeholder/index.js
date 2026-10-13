@@ -18,7 +18,7 @@ export default function Placeholder({ titulo, descricao, versaoPrevista }) {
           Obra ativa: {obraAtiva ? obraAtiva.nome : 'nenhuma selecionada'}
         </Text>
         {versaoPrevista ? (
-          <Text style={styles.meta}>Previsto para a versao {versaoPrevista}</Text>
+          <Text style={styles.meta}>Previsto para a versão {versaoPrevista}</Text>
         ) : null}
       </View>
     </View>

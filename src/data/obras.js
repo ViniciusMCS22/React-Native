@@ -16,7 +16,7 @@ export const obraExemplo = {
     id: 'obra-001',
     nome: 'Casa A',
     cliente: 'Particular',
-    local: 'Cohama, Sao Luis - MA',
+    local: 'Cohama, São Luís - MA',
     contrato: 'CT-2026/014',
     responsavel: 'Vinicius Salgado',
     situacao: 'Em execução',
@@ -28,7 +28,7 @@ export const obraExemplo = {
   orcamento: {
     id: 'orc-001',
     versao: 1,
-    descricao: 'Orcamento-base de materiais',
+    descricao: 'Orçamento-base de materiais',
     bdi_percentual: 22.5,
     // data-base, fonte e precos NAO ficam aqui: saem da tabela SINAPI-MA
     // (src/data/sinapiMA.js) no momento em que criarObra() roda.
@@ -43,7 +43,7 @@ export const obraExemplo = {
     },
     {
       etapa: '1. Fundação', item: '1.2', codigo: 'SRV-1020', unidade: 'kg', quantidade: 850,
-      descricao: 'Armacao aco CA-50 - fundação',
+      descricao: 'Armação aço CA-50 - fundação',
       materiais: [['MAT-0005', 1.0, 10], ['MAT-0007', 0.025, 0]],
     },
     {
@@ -53,12 +53,12 @@ export const obraExemplo = {
     },
     {
       etapa: '2. Estrutura', item: '2.2', codigo: 'SRV-2020', unidade: 'kg', quantidade: 1400,
-      descricao: 'Armacao aco CA-50 - pilares e vigas',
+      descricao: 'Armação aço CA-50 - pilares e vigas',
       materiais: [['MAT-0005', 1.0, 10], ['MAT-0007', 0.025, 0]],
     },
     {
       etapa: '2. Estrutura', item: '2.3', codigo: 'SRV-2030', unidade: 'kg', quantidade: 380,
-      descricao: 'Armacao aco CA-60 - estribos',
+      descricao: 'Armação aço CA-60 - estribos',
       materiais: [['MAT-0006', 1.0, 10], ['MAT-0007', 0.025, 0]],
     },
     {
@@ -68,17 +68,17 @@ export const obraExemplo = {
     },
     {
       etapa: '3. Alvenaria', item: '3.1', codigo: 'SRV-3010', unidade: 'm2', quantidade: 320,
-      descricao: 'Alvenaria de vedacao em bloco ceramico 9x19x19 cm',
+      descricao: 'Alvenaria de vedação em bloco cerâmico 9x19x19 cm',
       materiais: [['MAT-0010', 27.5, 5], ['MAT-0001', 0.045, 5], ['MAT-0002', 0.12, 5], ['MAT-0003', 0.013, 10]],
     },
     {
       etapa: '4. Revestimento', item: '4.1', codigo: 'SRV-4010', unidade: 'm2', quantidade: 640,
-      descricao: 'Chapisco em paredes, traco 1:3',
+      descricao: 'Chapisco em paredes, traço 1:3',
       materiais: [['MAT-0001', 0.05, 5], ['MAT-0003', 0.005, 10]],
     },
     {
       etapa: '4. Revestimento', item: '4.2', codigo: 'SRV-4020', unidade: 'm2', quantidade: 640,
-      descricao: 'Reboco (massa unica) em paredes, e = 2 cm',
+      descricao: 'Reboco (massa única) em paredes, e = 2 cm',
       materiais: [['MAT-0001', 0.14, 5], ['MAT-0002', 0.25, 5], ['MAT-0003', 0.025, 10]],
     },
     {
@@ -88,12 +88,12 @@ export const obraExemplo = {
     },
     {
       etapa: '5. Pisos', item: '5.2', codigo: 'SRV-5020', unidade: 'm2', quantidade: 120,
-      descricao: 'Piso ceramico 45x45 cm assentado com argamassa colante',
+      descricao: 'Piso cerâmico 45x45 cm assentado com argamassa colante',
       materiais: [['MAT-0011', 1.0, 10], ['MAT-0012', 0.25, 5], ['MAT-0013', 0.3, 5]],
     },
     {
       etapa: '6. Pintura', item: '6.1', codigo: 'SRV-6010', unidade: 'm2', quantidade: 900,
-      descricao: 'Pintura acrilica em paredes, duas demaos',
+      descricao: 'Pintura acrílica em paredes, duas demãos',
       materiais: [['MAT-0014', 0.017, 5]],
     },
   ],

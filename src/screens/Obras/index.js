@@ -10,8 +10,8 @@ export default function Obras({ navigation }) {
   const { obras, obraAtivaId, selecionarObra, carregando, erro, recarregarObras } =
     useObraAtiva();
 
+  
   function abrirObra(obra) {
-    selecionarObra(obra.id);
     navigation.navigate('ObraDetalhe', { obraId: obra.id, nome: obra.nome });
   }
 
@@ -34,13 +34,13 @@ export default function Obras({ navigation }) {
       ListHeaderComponent={
         <Text style={styles.introducao}>
           {erro
-            ? `Nao foi possivel ler as obras: ${String(erro.message ?? erro)}`
-            : 'Toque em uma obra para torna-la ativa. As demais abas passam a mostrar os dados dela.(Expectativa: 0.2.3)'}
+            ? `Não foi possível ler as obras: ${String(erro.message ?? erro)}`
+            : 'Toque em uma obra para ver os detalhes. Use "Tornar ativa" para que o Início mostre o resumo dela.'}
         </Text>
       }
       ListEmptyComponent={
         <Text style={styles.vazio}>
-          Nenhuma obra vinculada ao seu usuario. Peca ao gestor para vincular.
+          Nenhuma obra vinculada ao seu usuário. Peça ao gestor para vincular.
         </Text>
       }
       renderItem={({ item }) => {
@@ -71,6 +71,18 @@ export default function Obras({ navigation }) {
             <Text style={styles.valor}>
               Material previsto: {moeda(item.material_previsto)}
             </Text>
+
+            {!ativa ? (
+              <Pressable
+                style={({ pressed }) => [styles.botaoAtivar, pressed && styles.botaoAtivarPressionado]}
+                onPress={() => selecionarObra(item.id)}
+                accessibilityRole="button"
+                accessibilityLabel={`Tornar ${item.nome} a obra ativa`}
+              >
+                <Ionicons name="pin-outline" size={16} color={cores.grafite} />
+                <Text style={styles.botaoAtivarTexto}>Tornar ativa</Text>
+              </Pressable>
+            ) : null}
           </Pressable>
         );
       }}

@@ -31,7 +31,7 @@ export const semaforo = {
     chave: 'atencao',
     cor: '#8A6100',
     fundo: '#FBF0D9',
-    rotulo: 'Desvio em atencao',
+    rotulo: 'Desvio em atenção',
     icone: 'alert-circle',
   },
   critico: {
@@ -52,7 +52,7 @@ export const semaforo = {
     chave: 'pendente',
     cor: '#5A6068',
     fundo: '#EDEFF2',
-    rotulo: 'Sem comparacao possivel',
+    rotulo: 'Sem comparação possível',
     icone: 'help-circle',
   },
 };
@@ -63,8 +63,8 @@ export const semaforo = {
 //   perda  (vermelho) : quanto o mesmo material ficou mais caro
 //   ganho  (verde)    : quanto o mesmo material ficou mais barato
 export const variacaoPreco = {
-  estavel: { chave: 'estavel', cor: semaforo.semCompra.cor, fundo: semaforo.semCompra.fundo, rotulo: 'Estavel', icone: 'remove-circle' },
+  estavel: { chave: 'estavel', cor: semaforo.semCompra.cor, fundo: semaforo.semCompra.fundo, rotulo: 'Estável', icone: 'remove-circle' },
   perda: { chave: 'perda', cor: semaforo.critico.cor, fundo: semaforo.critico.fundo, rotulo: 'Perda', icone: 'trending-up' },
   ganho: { chave: 'ganho', cor: semaforo.favoravel.cor, fundo: semaforo.favoravel.fundo, rotulo: 'Ganho', icone: 'trending-down' },
-  semPreco: { chave: 'semPreco', cor: semaforo.pendente.cor, fundo: semaforo.pendente.fundo, rotulo: 'Sem preco atual', icone: 'help-circle' },
+  semPreco: { chave: 'semPreco', cor: semaforo.pendente.cor, fundo: semaforo.pendente.fundo, rotulo: 'Sem preço atual', icone: 'help-circle' },
 };

@@ -39,3 +39,9 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# API (Python)
+api/.venv/
+api/*.db
+__pycache__/
+.pytest_cache/

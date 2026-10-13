@@ -19,7 +19,7 @@
 //
 // Toda consulta de leitura deve filtrar `excluido_em IS NULL`.
 
-export const VERSAO_BANCO = 2;
+export const VERSAO_BANCO = 4;
 
 const colunasSync = `
   criado_em      TEXT NOT NULL,
@@ -144,5 +144,53 @@ export const migracoes = [
   BEGIN
     SELECT RAISE(ABORT, 'O preco-base da obra e um registro historico e nao pode ser alterado.');
   END;
+  `,
+
+  // v3: preferencias do usuario (aba Mais). Chave/valor com o valor em JSON.
+  // Sao configuracoes do aparelho, nao dados da obra: por isso nao levam as
+  // colunas de sincronizacao.
+  `
+  CREATE TABLE preferencias (
+    chave          TEXT PRIMARY KEY NOT NULL,
+    valor          TEXT NOT NULL,
+    atualizado_em  TEXT NOT NULL
+  );
+  `,
+
+  // v4: acentuacao dos dados de exemplo (src/data). O seed so roda com o banco
+  // vazio, entao quem ja tinha o app precisa desta correcao. So mexe nos
+  // textos antigos exatos; dados digitados pelo usuario ficam como estao.
+  `
+  UPDATE obras SET local = 'Cohama, São Luís - MA' WHERE local = 'Cohama, Sao Luis - MA';
+  UPDATE orcamentos SET descricao = 'Orçamento-base de materiais' WHERE descricao = 'Orcamento-base de materiais';
+
+  UPDATE insumos SET descricao = 'Areia média lavada' WHERE descricao = 'Areia media lavada';
+  UPDATE insumos SET descricao = 'Aço CA-50, 10,0 mm, vergalhão' WHERE descricao = 'Aco CA-50, 10,0 mm, vergalhao';
+  UPDATE insumos SET descricao = 'Aço CA-60, 5,0 mm, vergalhão' WHERE descricao = 'Aco CA-60, 5,0 mm, vergalhao';
+  UPDATE insumos SET descricao = 'Prego 17x27 com cabeça' WHERE descricao = 'Prego 17x27 com cabeca';
+  UPDATE insumos SET descricao = 'Bloco cerâmico vedação 9x19x19 cm' WHERE descricao = 'Bloco ceramico vedacao 9x19x19 cm';
+  UPDATE insumos SET descricao = 'Piso cerâmico PEI-4, 45x45 cm' WHERE descricao = 'Piso ceramico PEI-4, 45x45 cm';
+  UPDATE insumos SET descricao = 'Rejunte cimentício' WHERE descricao = 'Rejunte cimenticio';
+  UPDATE insumos SET descricao = 'Tinta acrílica fosca, lata 18 L' WHERE descricao = 'Tinta acrilica fosca, lata 18 L';
+  UPDATE insumos SET categoria = 'Aço' WHERE categoria = 'Aco';
+
+  UPDATE sinapi_precos SET descricao = 'Areia média lavada' WHERE descricao = 'Areia media lavada';
+  UPDATE sinapi_precos SET descricao = 'Aço CA-50, 10,0 mm, vergalhão' WHERE descricao = 'Aco CA-50, 10,0 mm, vergalhao';
+  UPDATE sinapi_precos SET descricao = 'Aço CA-60, 5,0 mm, vergalhão' WHERE descricao = 'Aco CA-60, 5,0 mm, vergalhao';
+  UPDATE sinapi_precos SET descricao = 'Prego 17x27 com cabeça' WHERE descricao = 'Prego 17x27 com cabeca';
+  UPDATE sinapi_precos SET descricao = 'Bloco cerâmico vedação 9x19x19 cm' WHERE descricao = 'Bloco ceramico vedacao 9x19x19 cm';
+  UPDATE sinapi_precos SET descricao = 'Piso cerâmico PEI-4, 45x45 cm' WHERE descricao = 'Piso ceramico PEI-4, 45x45 cm';
+  UPDATE sinapi_precos SET descricao = 'Rejunte cimentício' WHERE descricao = 'Rejunte cimenticio';
+  UPDATE sinapi_precos SET descricao = 'Tinta acrílica fosca, lata 18 L' WHERE descricao = 'Tinta acrilica fosca, lata 18 L';
+  UPDATE sinapi_precos SET classe = 'Aço' WHERE classe = 'Aco';
+
+  UPDATE servicos SET descricao = 'Armação aço CA-50 - fundação' WHERE descricao = 'Armacao aco CA-50 - fundação';
+  UPDATE servicos SET descricao = 'Armação aço CA-50 - pilares e vigas' WHERE descricao = 'Armacao aco CA-50 - pilares e vigas';
+  UPDATE servicos SET descricao = 'Armação aço CA-60 - estribos' WHERE descricao = 'Armacao aco CA-60 - estribos';
+  UPDATE servicos SET descricao = 'Alvenaria de vedação em bloco cerâmico 9x19x19 cm' WHERE descricao = 'Alvenaria de vedacao em bloco ceramico 9x19x19 cm';
+  UPDATE servicos SET descricao = 'Chapisco em paredes, traço 1:3' WHERE descricao = 'Chapisco em paredes, traco 1:3';
+  UPDATE servicos SET descricao = 'Reboco (massa única) em paredes, e = 2 cm' WHERE descricao = 'Reboco (massa unica) em paredes, e = 2 cm';
+  UPDATE servicos SET descricao = 'Piso cerâmico 45x45 cm assentado com argamassa colante' WHERE descricao = 'Piso ceramico 45x45 cm assentado com argamassa colante';
+  UPDATE servicos SET descricao = 'Pintura acrílica em paredes, duas demãos' WHERE descricao = 'Pintura acrilica em paredes, duas demaos';
   `,
 ];

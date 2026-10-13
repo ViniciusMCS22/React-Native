@@ -35,7 +35,7 @@ export async function criarObra(db, dados, opcoes = {}) {
   const mes = opcoes.mesReferencia ?? (await ultimoMesSinapi(db, uf));
 
   if (!obra?.nome) throw new Error('Informe o nome da obra.');
-  if (!mes) throw new Error(`Nao ha tabela SINAPI-${uf} carregada no aparelho.`);
+  if (!mes) throw new Error(`Não há tabela SINAPI-${uf} carregada no aparelho.`);
 
   // Valida antes de gravar: todo material precisa ter preco SINAPI no mes.
   const precos = {};
@@ -50,7 +50,7 @@ export async function criarObra(db, dados, opcoes = {}) {
   }
   if (faltando.length) {
     throw new Error(
-      `Sem preco SINAPI-${uf} em ${mesParaDataBase(mes)} para: ${[...new Set(faltando)].join(', ')}`
+      `Sem preço SINAPI-${uf} em ${mesParaDataBase(mes)} para: ${[...new Set(faltando)].join(', ')}`
     );
   }
 
@@ -77,7 +77,7 @@ export async function criarObra(db, dados, opcoes = {}) {
        VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?)`,
       [
         orcamentoId, obraId, orcamento.versao ?? 1,
-        orcamento.descricao ?? 'Orcamento-base de materiais',
+        orcamento.descricao ?? 'Orçamento-base de materiais',
         mesParaDataBase(mes), `SINAPI-${uf}`, orcamento.bdi_percentual ?? 0,
         uf, mes, agora, agora,
       ]

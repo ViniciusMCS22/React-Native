@@ -1,6 +1,7 @@
 // src/components/BarraVariacao/styles.js
 import { StyleSheet } from 'react-native';
 import { cores } from '../../theme/cores';
+import { espacos, raios } from '../../theme/medidas';
 
 export const styles = StyleSheet.create({
   trilho: {
@@ -12,7 +13,7 @@ export const styles = StyleSheet.create({
   },
   trilhoCompacto: {
     height: 8,
-    borderRadius: 4,
+    borderRadius: raios.sm,
   },
   segmento: {
     height: '100%',
@@ -28,7 +29,7 @@ export const styles = StyleSheet.create({
   },
   escala: {
     height: 16,
-    marginTop: 4,
+    marginTop: espacos.xs,
   },
   escalaTexto: {
     fontSize: 11,

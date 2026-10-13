@@ -1,6 +1,7 @@
 // src/screens/ObraDetalhe/styles.js
 import { StyleSheet } from 'react-native';
 import { cores } from '../../theme/cores';
+import { espacos, raios } from '../../theme/medidas';
 
 export const styles = StyleSheet.create({
   container: {
@@ -12,18 +13,18 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   conteudo: {
-    padding: 16,
-    paddingBottom: 32,
+    padding: espacos.lg,
+    paddingBottom: espacos.xxxl,
   },
   cabecalho: {
-    gap: 16,
-    marginBottom: 8,
+    gap: espacos.lg,
+    marginBottom: espacos.sm,
   },
   bloco: {
     borderWidth: 1,
     borderColor: cores.borda,
-    borderRadius: 8,
-    padding: 16,
+    borderRadius: raios.md,
+    padding: espacos.lg,
     gap: 10,
   },
   tituloBloco: {
@@ -35,10 +36,10 @@ export const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 19,
     color: cores.textoFraco,
-    marginBottom: 4,
+    marginBottom: espacos.xs,
   },
   campo: {
-    gap: 2,
+    gap: espacos.xxs,
   },
   rotulo: {
     fontSize: 13,
@@ -55,7 +56,7 @@ export const styles = StyleSheet.create({
   aviso: {
     fontSize: 15,
     color: cores.textoFraco,
-    padding: 24,
+    padding: espacos.xxl,
   },
 
   // Seletor "Por servico / Por material"
@@ -63,7 +64,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     borderWidth: 1,
     borderColor: cores.grafite,
-    borderRadius: 8,
+    borderRadius: raios.md,
     overflow: 'hidden',
   },
   seletorOpcao: {
@@ -87,8 +88,8 @@ export const styles = StyleSheet.create({
 
   // Cabecalho de cada servico
   secao: {
-    marginTop: 16,
-    gap: 8,
+    marginTop: espacos.lg,
+    gap: espacos.sm,
   },
   etapa: {
     fontSize: 13,
@@ -99,9 +100,9 @@ export const styles = StyleSheet.create({
   },
   secaoCartao: {
     backgroundColor: cores.fundoAlternativo,
-    borderRadius: 8,
-    padding: 12,
-    gap: 2,
+    borderRadius: raios.md,
+    padding: espacos.md,
+    gap: espacos.xxs,
   },
   secaoCodigo: {
     fontSize: 12,
@@ -125,16 +126,16 @@ export const styles = StyleSheet.create({
   // Linha de material
   item: {
     paddingVertical: 10,
-    paddingHorizontal: 12,
+    paddingHorizontal: espacos.md,
     borderBottomWidth: 1,
     borderBottomColor: cores.borda,
-    gap: 2,
+    gap: espacos.xxs,
   },
   linhaEntre: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'baseline',
-    gap: 12,
+    gap: espacos.md,
   },
   itemTitulo: {
     flex: 1,
@@ -162,24 +163,24 @@ export const styles = StyleSheet.create({
     fontWeight: '700',
   },
   notaLista: {
-    marginTop: 16,
+    marginTop: espacos.lg,
   },
-  selo: {
+  botaoAtivar: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 4,
+    gap: espacos.xs,
+    minHeight: 44,
+    paddingHorizontal: espacos.xs,
   },
-  seloTexto: {
-    fontSize: 12,
+  botaoAtivarTexto: {
+    fontSize: 15,
     fontWeight: '600',
+    color: cores.grafite,
   },
   legenda: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: espacos.md,
   },
   legendaItem: {
     flexDirection: 'row',
@@ -196,8 +197,8 @@ export const styles = StyleSheet.create({
     color: cores.textoFraco,
   },
   evolucao: {
-    gap: 8,
-    marginTop: 4,
+    gap: espacos.sm,
+    marginTop: espacos.xs,
   },
   evolucaoLinha: {
     flexDirection: 'row',

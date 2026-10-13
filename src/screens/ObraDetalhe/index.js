@@ -1,10 +1,12 @@
 
 
-import { useMemo, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { View, Text, SectionList, Pressable, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useOrcamentoObra } from '../../hooks/useOrcamentoObra';
+import { useObraAtiva } from '../../contexts/ObraAtivaContext';
 import BarraVariacao from '../../components/BarraVariacao';
+import SeloVariacao, { textoVariacao } from '../../components/SeloVariacao';
 import {
   moeda,
   numero,
@@ -23,24 +25,6 @@ const MODOS = [
   { chave: 'material', rotulo: 'Materiais' },
   { chave: 'depreciacao', rotulo: 'Depreciação' },
 ];
-
-// Etiqueta de status: sempre cor + icone + texto (RNF23).
-function Selo({ status, texto }) {
-  const s = variacaoPreco[status] ?? variacaoPreco.estavel;
-  return (
-    <View style={[styles.selo, { backgroundColor: s.fundo }]}>
-      <Ionicons name={s.icone} size={14} color={s.cor} />
-      <Text style={[styles.seloTexto, { color: s.cor }]}>{texto ?? s.rotulo}</Text>
-    </View>
-  );
-}
-
-function textoStatus(status, fracao) {
-  if (status === 'perda') return `Perda de ${numero(Math.abs(fracao) * 100, 2)}%`;
-  if (status === 'ganho') return `Ganho de ${numero(Math.abs(fracao) * 100, 2)}%`;
-  if (status === 'semPreco') return 'Sem preço atual';
-  return 'Mesmo valor';
-}
 
 function Legenda() {
   const itens = [
@@ -65,8 +49,8 @@ function ResumoDepreciacao({ d }) {
     return (
       <View style={styles.bloco}>
         <Text style={styles.nota}>
-          Esta obra nao tem precos SINAPI guardados na criacao, entao nao ha base
-          para calcular a depreciacao.
+          Esta obra não tem preços SINAPI guardados na criação, então não há base
+          para calcular a depreciação.
         </Text>
       </View>
     );
@@ -83,7 +67,7 @@ function ResumoDepreciacao({ d }) {
 
       <View style={styles.linhaEntre}>
         <Text style={[styles.indiceGrande, { color: cor }]}>{percentual(d.indice, 2)}</Text>
-        <Selo status={d.status} texto={textoStatus(d.status, d.indice - 1)} />
+        <SeloVariacao status={d.status} texto={textoVariacao(d.status, d.indice - 1)} />
       </View>
       <BarraVariacao indice={d.indice} />
       <Legenda />
@@ -91,7 +75,7 @@ function ResumoDepreciacao({ d }) {
       <Campo rotulo="Valor na criação" valor={moeda(d.valorBase)} />
       <Campo rotulo="Valor com preços atuais" valor={moeda(d.valorAtual)} />
       <View style={styles.campo}>
-        <Text style={styles.rotulo}>Diferenca</Text>
+        <Text style={styles.rotulo}>Diferença</Text>
         <Text style={[styles.valor, styles.valorForte, { color: cor }]}>
           {moedaComSinal(d.variacao)}
         </Text>
@@ -99,13 +83,13 @@ function ResumoDepreciacao({ d }) {
 
       {d.mesBase === d.mesAtual ? (
         <Text style={styles.nota}>
-          Ainda nao ha tabela SINAPI mais nova que a usada na criacao.
+          Ainda não há tabela SINAPI mais nova que a usada na criação.
         </Text>
       ) : null}
 
       {d.evolucao.length > 1 ? (
         <View style={styles.evolucao}>
-          <Text style={styles.rotulo}>Evolucao mes a mes</Text>
+          <Text style={styles.rotulo}>Evolução mês a mês</Text>
           {d.evolucao.map((e) => (
             <View key={e.mes} style={styles.evolucaoLinha}>
               <Text style={styles.evolucaoMes}>{mesReferencia(e.mes)}</Text>
@@ -134,12 +118,12 @@ function ItemDepreciacao({ item, mesAtual }) {
           {moeda(item.precoBase)} {'->'} {moeda(item.precoAtual)} / {item.unidade} (
           {percentualComSinal(item.variacaoPercentual)})
         </Text>
-        <Selo status={item.status} />
+        <SeloVariacao status={item.status} />
       </View>
       <Text style={styles.itemMeta}>
         {quantidade(item.quantidade, item.unidade)}
         {item.mesPrecoAtual && item.mesPrecoAtual !== mesAtual
-          ? ` - ultimo preco publicado: ${mesReferencia(item.mesPrecoAtual)}`
+          ? ` - último preço publicado: ${mesReferencia(item.mesPrecoAtual)}`
           : ''}
       </Text>
     </View>
@@ -166,8 +150,8 @@ function Cabecalho({ obra, resumo, depreciacao, modo, setModo }) {
         <Campo rotulo="Responsável" valor={obra.responsavel ?? '-'} />
         <Campo rotulo="Situação" valor={obra.situacao} />
         <Campo
-          rotulo="Area construida"
-          valor={obra.area_construida_m2 ? `${numero(obra.area_construida_m2)} m2` : '-'}
+          rotulo="Área construída"
+          valor={obra.area_construida_m2 ? `${numero(obra.area_construida_m2)} m²` : '-'}
         />
         <Campo
           rotulo="Prazo"
@@ -179,12 +163,12 @@ function Cabecalho({ obra, resumo, depreciacao, modo, setModo }) {
         <>
           <View style={styles.bloco}>
             <Text style={styles.tituloBloco}>Referência do orçamento</Text>
-            <Campo rotulo="Orçamento" valor={`${resumo.descricao} (versao ${resumo.versao})`} />
+            <Campo rotulo="Orçamento" valor={`${resumo.descricao} (versão ${resumo.versao})`} />
             <Campo rotulo="Data-base" valor={resumo.data_base} />
             <Campo rotulo="Fonte de preços" valor={resumo.fonte_precos} />
             {resumo.sinapi_mes_referencia ? (
               <Campo
-                rotulo="Precos guardados na criacao"
+                rotulo="Preços guardados na criação"
                 valor={`SINAPI-${resumo.sinapi_uf} ${mesReferencia(resumo.sinapi_mes_referencia)}`}
               />
             ) : null}
@@ -201,16 +185,16 @@ function Cabecalho({ obra, resumo, depreciacao, modo, setModo }) {
             <Campo rotulo="Previsto com BDI" valor={moeda(resumo.custo_material_com_bdi)} />
             {obra.area_construida_m2 ? (
               <Campo
-                rotulo="Material por m2 construido"
+                rotulo="Material por m² construído"
                 valor={moeda(resumo.custo_material / obra.area_construida_m2)}
               />
             ) : null}
             <Campo
               rotulo="Composição"
-              valor={`${resumo.qtd_etapas} etapas, ${resumo.qtd_servicos} servicos, ${resumo.qtd_materiais} materiais`}
+              valor={`${resumo.qtd_etapas} etapas, ${resumo.qtd_servicos} serviços, ${resumo.qtd_materiais} materiais`}
             />
             <Campo rotulo="Comprado" valor="Sem compras registradas" />
-            <Campo rotulo="Projeção ao termino" valor="indefinido" />
+            <Campo rotulo="Projeção ao término" valor="indefinido" />
           </View>
 
           <View style={styles.seletor} accessibilityRole="tablist">
@@ -235,7 +219,7 @@ function Cabecalho({ obra, resumo, depreciacao, modo, setModo }) {
           {modo === 'depreciacao' ? <ResumoDepreciacao d={depreciacao} /> : null}
         </>
       ) : (
-        <Text style={styles.aviso}>Esta obra ainda nao tem orcamento cadastrado.</Text>
+        <Text style={styles.aviso}>Esta obra ainda não tem orçamento cadastrado.</Text>
       )}
     </View>
   );
@@ -286,7 +270,7 @@ function ItemMaterialConsolidado({ item }) {
       </View>
       <Text style={styles.itemMeta}>
         {item.codigo} - {item.categoria ?? 'Sem categoria'} - em {item.qtd_servicos}{' '}
-        {item.qtd_servicos === 1 ? 'servico' : 'servicos'}
+        {item.qtd_servicos === 1 ? 'serviço' : 'serviços'}
       </Text>
       <View style={styles.linhaEntre}>
         <Text style={styles.itemMeta}>
@@ -298,11 +282,38 @@ function ItemMaterialConsolidado({ item }) {
   );
 }
 
-export default function ObraDetalhe({ route }) {
+export default function ObraDetalhe({ route, navigation }) {
   const obraId = route.params?.obraId;
   const { carregando, erro, obra, resumo, servicos, materiais, depreciacao } =
     useOrcamentoObra(obraId);
-  const [modo, setModo] = useState('servico');
+  const { obraAtivaId, selecionarObra } = useObraAtiva();
+  // O Inicio abre direto na aba Depreciacao passando { modo: 'depreciacao' }.
+  const [modo, setModo] = useState(route.params?.modo ?? 'servico');
+
+  useEffect(() => {
+    if (route.params?.modo) setModo(route.params.modo);
+  }, [route.params?.modo]);
+
+  // Botao no cabecalho para marcar esta obra como ativa.
+  const ativa = obraId === obraAtivaId;
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <Pressable
+          onPress={() => selecionarObra(obraId)}
+          disabled={ativa}
+          style={styles.botaoAtivar}
+          accessibilityRole="button"
+          accessibilityState={{ selected: ativa }}
+          accessibilityLabel={ativa ? 'Esta é a obra ativa' : 'Marcar como obra ativa'}
+          hitSlop={8}
+        >
+          <Ionicons name={ativa ? 'pin' : 'pin-outline'} size={18} color={cores.grafite} />
+          <Text style={styles.botaoAtivarTexto}>{ativa ? 'Ativa' : 'Tornar ativa'}</Text>
+        </Pressable>
+      ),
+    });
+  }, [navigation, ativa, obraId, selecionarObra]);
 
   const secoes = useMemo(() => {
     if (modo === 'depreciacao') {
@@ -329,7 +340,7 @@ export default function ObraDetalhe({ route }) {
   if (erro) {
     return (
       <View style={styles.container}>
-        <Text style={styles.aviso}>Nao foi possivel ler o orcamento: {String(erro.message ?? erro)}</Text>
+        <Text style={styles.aviso}>Não foi possível ler o orçamento: {String(erro.message ?? erro)}</Text>
       </View>
     );
   }
@@ -337,7 +348,7 @@ export default function ObraDetalhe({ route }) {
   if (!obra) {
     return (
       <View style={styles.container}>
-        <Text style={styles.aviso}>Obra nao encontrada.</Text>
+        <Text style={styles.aviso}>Obra não encontrada.</Text>
       </View>
     );
   }
@@ -367,7 +378,7 @@ export default function ObraDetalhe({ route }) {
           </Text>
         ) : (
           <Text style={styles.nota}>
-            Cada material somado em todos os servicos em que aparece, do maior
+            Cada material somado em todos os serviços em que aparece, do maior
             para o menor custo.
           </Text>
         )
@@ -383,7 +394,7 @@ export default function ObraDetalhe({ route }) {
       }
       ListEmptyComponent={
         resumo && modo !== 'depreciacao' ? (
-          <Text style={styles.aviso}>Orcamento sem itens de material.</Text>
+          <Text style={styles.aviso}>Orçamento sem itens de material.</Text>
         ) : null
       }
     />
