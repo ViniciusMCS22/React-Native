@@ -240,15 +240,6 @@ npx expo install --fix
 
 ---
 
-## Convenções
-
-- Mensagens de commit no padrão [Conventional Commits](https://www.conventionalcommits.org/pt-br/): `feat:`, `fix:`, `docs:`, `refactor:`, `chore:`
-- Nomes de arquivos e pastas sem acentos e sem espaços
-- Componentes em PascalCase (`MenuLateral`), arquivos internos em minúsculas (`index.js`)
-- O `package-lock.json` **deve** ser commitado — é ele que garante versões idênticas para todos
-
----
-
 ## Tecnologias
 
 - HTML, CSS e JavaScript (base)
