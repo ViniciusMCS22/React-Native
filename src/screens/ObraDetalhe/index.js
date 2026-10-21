@@ -7,6 +7,7 @@ import { useOrcamentoObra } from '../../hooks/useOrcamentoObra';
 import { useObraAtiva } from '../../contexts/ObraAtivaContext';
 import BarraVariacao from '../../components/BarraVariacao';
 import SeloVariacao, { textoVariacao } from '../../components/SeloVariacao';
+import PainelMarca from '../../components/PainelMarca';
 import {
   moeda,
   numero,
@@ -142,6 +143,20 @@ function Campo({ rotulo, valor, destaque }) {
 function Cabecalho({ obra, resumo, depreciacao, modo, setModo }) {
   return (
     <View style={styles.cabecalho}>
+      <PainelMarca
+        compacto
+        sobretitulo={obra.cliente}
+        titulo={obra.nome}
+        descricao={`${obra.local} - ${obra.situacao}`}
+        indicadores={[
+          {
+            rotulo: 'material previsto',
+            valor: resumo ? moeda(resumo.custo_material) : '-',
+          },
+          { rotulo: 'término previsto', valor: data(obra.data_termino_prevista) },
+        ]}
+      />
+
       <View style={styles.bloco}>
         <Text style={styles.tituloBloco}>Identificação</Text>
         <Campo rotulo="Cliente" valor={obra.cliente} />
@@ -308,7 +323,8 @@ export default function ObraDetalhe({ route, navigation }) {
           accessibilityLabel={ativa ? 'Esta é a obra ativa' : 'Marcar como obra ativa'}
           hitSlop={8}
         >
-          <Ionicons name={ativa ? 'pin' : 'pin-outline'} size={18} color={cores.grafite} />
+          {/* Branco: o cabecalho de navegacao e marinho. */}
+          <Ionicons name={ativa ? 'pin' : 'pin-outline'} size={18} color={cores.branco} />
           <Text style={styles.botaoAtivarTexto}>{ativa ? 'Ativa' : 'Tornar ativa'}</Text>
         </Pressable>
       ),

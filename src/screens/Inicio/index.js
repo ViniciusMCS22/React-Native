@@ -7,7 +7,9 @@
 // Perfis sem 'orcamentos:ver' (cliente) veem os totais, mas nao a lista de
 // materiais nem o atalho para o detalhe tecnico.
 
+import { useCallback } from 'react';
 import { View, Text, ScrollView, Pressable, ActivityIndicator, RefreshControl } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import { useObraAtiva } from '../../contexts/ObraAtivaContext';
@@ -15,6 +17,7 @@ import { usePreferencias } from '../../contexts/PreferenciasContext';
 import { useOrcamentoObra } from '../../hooks/useOrcamentoObra';
 import BarraVariacao from '../../components/BarraVariacao';
 import SeloVariacao, { textoVariacao } from '../../components/SeloVariacao';
+import PainelMarca from '../../components/PainelMarca';
 import { cores, semaforo, variacaoPreco } from '../../theme/cores';
 import {
   moeda,
@@ -106,6 +109,13 @@ export default function Inicio({ navigation }) {
   const { preferencias } = usePreferencias();
   const { carregando, erro, resumo, depreciacao, recarregar } = useOrcamentoObra(obraAtiva?.id);
 
+  // Os insumos podem mudar na aba Insumos; relê ao voltar para o Inicio.
+  useFocusEffect(
+    useCallback(() => {
+      recarregar();
+    }, [recarregar])
+  );
+
   const podeVerTecnico = temPermissao('orcamentos:ver');
   const limite = preferencias.limiteAlerta;
   const acimaDoLimite =
@@ -152,12 +162,11 @@ export default function Inicio({ navigation }) {
       }
     >
       {/* 1. Mensagem ao usuario */}
-      <View style={styles.mensagem}>
-        <Text style={styles.data}>{hojePorExtenso()}</Text>
-        <Text style={styles.saudacao}>
-          {saudacao()}
-          {primeiroNome ? `, ${primeiroNome}` : ''}!
-        </Text>
+      {/* Status so aparece no quadro branco, nunca direto sobre o azul. */}
+      <PainelMarca
+        sobretitulo={hojePorExtenso()}
+        titulo={`${saudacao()}${primeiroNome ? `, ${primeiroNome}` : ''}!`}
+      >
 
         <View style={styles.resumo}>
           <LinhaResumo icone="business-outline">
@@ -184,7 +193,7 @@ export default function Inicio({ navigation }) {
             Última sincronização: {quandoFoi(preferencias.ultimaSinc)}.
           </LinhaResumo>
         </View>
-      </View>
+      </PainelMarca>
 
       {/* 2. Obra ativa */}
       <Text style={styles.secaoTitulo} accessibilityRole="header">

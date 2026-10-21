@@ -3,26 +3,34 @@
 // interfira na outra e que a regra de "tres toques" do item 3.1.1 seja medivel.
 
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { cores } from '../theme/cores';
+import Marca from '../components/Marca';
+import { cores, marca } from '../theme/cores';
 
 import Inicio from '../screens/Inicio';
 import Obras from '../screens/Obras';
 import ObraDetalhe from '../screens/ObraDetalhe';
 import Insumos from '../screens/Insumos';
 import InsumoDetalhe from '../screens/InsumoDetalhe';
+import InsumoNovo from '../screens/InsumoNovo';
 import Aquisicoes from '../screens/Aquisicoes';
 import Mais from '../screens/Mais';
 import Login from '../screens/Login';
 import LegendaIndicadores from '../screens/LegendaIndicadores';
 import Sobre from '../screens/Sobre';
 
+// Cabecalho marinho em todas as abas: e a cor estrutural da marca e nao
+// conflita com o semaforo (ver theme/cores.js).
 const opcoesPadrao = {
-  headerStyle: { backgroundColor: cores.fundo },
-  headerTintColor: cores.grafite,
-  headerTitleStyle: { color: cores.texto, fontWeight: '600' },
+  headerStyle: { backgroundColor: marca.marinho },
+  headerTintColor: cores.branco,
+  headerTitleStyle: { color: cores.branco, fontWeight: '600' },
   headerShadowVisible: false,
   contentStyle: { backgroundColor: cores.fundo },
 };
+
+function TituloMarca() {
+  return <Marca tamanho={26} tema="escuro" comSlogan={false} />;
+}
 
 const StackInicio = createNativeStackNavigator();
 export function InicioStack() {
@@ -31,7 +39,7 @@ export function InicioStack() {
       <StackInicio.Screen
         name="InicioPainel"
         component={Inicio}
-        options={{ title: 'Início' }}
+        options={{ title: 'Início', headerTitle: TituloMarca }}
       />
     </StackInicio.Navigator>
   );
@@ -49,7 +57,7 @@ export function ObrasStack() {
       <StackObras.Screen
         name="ObraDetalhe"
         component={ObraDetalhe}
-        options={({ route }) => ({ title: route.params?.nome ?? 'Obra' })}
+        options={{ title: 'Obra' }}
       />
     </StackObras.Navigator>
   );
@@ -68,6 +76,11 @@ export function InsumosStack() {
         name="InsumoDetalhe"
         component={InsumoDetalhe}
         options={({ route }) => ({ title: route.params?.descricao ?? 'Insumo' })}
+      />
+      <StackInsumos.Screen
+        name="InsumoNovo"
+        component={InsumoNovo}
+        options={{ title: 'Adicionar insumo' }}
       />
     </StackInsumos.Navigator>
   );

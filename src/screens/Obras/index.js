@@ -3,14 +3,15 @@ import { View, Text, FlatList, Pressable, ActivityIndicator } from 'react-native
 import { Ionicons } from '@expo/vector-icons';
 import { useObraAtiva } from '../../contexts/ObraAtivaContext';
 import { moeda } from '../../utils/formatacao';
+import PainelMarca from '../../components/PainelMarca';
 import { cores } from '../../theme/cores';
 import { styles } from './styles';
 
 export default function Obras({ navigation }) {
-  const { obras, obraAtivaId, selecionarObra, carregando, erro, recarregarObras } =
+  const { obras, obraAtiva, obraAtivaId, selecionarObra, carregando, erro, recarregarObras } =
     useObraAtiva();
+  const totalPrevisto = obras.reduce((soma, o) => soma + (o.material_previsto ?? 0), 0);
 
-  
   function abrirObra(obra) {
     navigation.navigate('ObraDetalhe', { obraId: obra.id, nome: obra.nome });
   }
@@ -32,11 +33,22 @@ export default function Obras({ navigation }) {
       refreshing={false}
       onRefresh={recarregarObras}
       ListHeaderComponent={
-        <Text style={styles.introducao}>
-          {erro
-            ? `Não foi possível ler as obras: ${String(erro.message ?? erro)}`
-            : 'Toque em uma obra para ver os detalhes. Use "Tornar ativa" para que o Início mostre o resumo dela.'}
-        </Text>
+        <View style={styles.cabecalho}>
+          <PainelMarca
+            sobretitulo="Suas obras"
+            titulo={obraAtiva ? obraAtiva.nome : 'Nenhuma obra ativa'}
+            descricao={obraAtiva ? 'Obra ativa, resumida no Início.' : 'Toque em "Tornar ativa" para acompanhar uma obra no Início.'}
+            indicadores={[
+              { rotulo: obras.length === 1 ? 'obra' : 'obras', valor: String(obras.length) },
+              { rotulo: 'material previsto', valor: moeda(totalPrevisto) },
+            ]}
+          />
+          <Text style={styles.introducao}>
+            {erro
+              ? `Não foi possível ler as obras: ${String(erro.message ?? erro)}`
+              : 'Toque em uma obra para ver os detalhes.'}
+          </Text>
+        </View>
       }
       ListEmptyComponent={
         <Text style={styles.vazio}>

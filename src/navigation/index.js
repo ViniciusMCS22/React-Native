@@ -9,7 +9,7 @@ import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
-import { cores } from '../theme/cores';
+import { cores, marca } from '../theme/cores';
 import {
   InicioStack,
   ObrasStack,
@@ -61,7 +61,7 @@ function Abas() {
           backgroundColor: cores.fundo,
           borderTopColor: cores.borda,
         },
-        tabBarLabelStyle: { fontSize: 12 },
+        tabBarLabelStyle: { fontSize: 12, fontWeight: '600' },
         tabBarIcon: ({ color, size, focused }) => (
           <Ionicons
             name={focused ? icones[route.name] : `${icones[route.name]}-outline`}
@@ -95,7 +95,7 @@ export default function Navegacao() {
   if (carregando) {
     return (
       <View style={styles.carregando}>
-        <ActivityIndicator color={cores.grafite} />
+        <ActivityIndicator color={cores.branco} />
       </View>
     );
   }
@@ -112,6 +112,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: cores.fundo,
+    backgroundColor: marca.marinho,
   },
 });

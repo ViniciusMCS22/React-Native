@@ -11,6 +11,7 @@ import { useObraAtiva } from '../../contexts/ObraAtivaContext';
 import { usePreferencias } from '../../contexts/PreferenciasContext';
 import ItemConfiguracao from '../../components/ItemConfiguracao';
 import Secao from '../../components/Secao';
+import { Ornamento } from '../../components/Marca';
 import { ROTULOS_PERFIL } from '../../config/perfis';
 import { requisicao } from '../../services/api';
 import { cores } from '../../theme/cores';
@@ -116,19 +117,14 @@ export default function Mais({ navigation }) {
 
   return (
     <ScrollView style={styles.tela} contentContainerStyle={styles.conteudo}>
-      {erro ? (
-        <Text style={styles.erro}>
-          Não foi possível salvar as preferências: {String(erro.message ?? erro)}
-        </Text>
-      ) : null}
-
-      {/* Perfil */}
+      {/* Perfil: e a superficie de marca (azul) desta tela, sempre a primeira. */}
       <Pressable
         style={({ pressed }) => [styles.perfil, pressed && styles.perfilPressionado]}
         onPress={() => Alert.alert('Perfil', 'Edição de perfil prevista para a versão 0.4.1.')}
         accessibilityRole="button"
         accessibilityLabel={`Perfil de ${usuario.nome}, ${ROTULOS_PERFIL[usuario.perfil]}`}
       >
+        <Ornamento altura={150} />
         <View style={styles.avatar}>
           <Text style={styles.avatarTexto}>{iniciais(usuario.nome)}</Text>
         </View>
@@ -136,14 +132,20 @@ export default function Mais({ navigation }) {
           <Text style={styles.perfilNome}>{usuario.nome}</Text>
           <Text style={styles.perfilLinha}>{usuario.email}</Text>
           <View style={styles.marcaPerfil}>
-            <Ionicons name="shield-checkmark-outline" size={14} color={cores.grafite} />
+            <Ionicons name="shield-checkmark-outline" size={14} color={cores.branco} />
             <Text style={styles.marcaPerfilTexto}>
               {ROTULOS_PERFIL[usuario.perfil] ?? usuario.perfil}
             </Text>
           </View>
         </View>
-        <Ionicons name="chevron-forward" size={18} color={cores.textoFraco} />
+        <Ionicons name="chevron-forward" size={18} color={cores.branco} />
       </Pressable>
+
+      {erro ? (
+        <Text style={styles.erro}>
+          Não foi possível salvar as preferências: {String(erro.message ?? erro)}
+        </Text>
+      ) : null}
 
       <Secao titulo="Obra">
         <ItemConfiguracao

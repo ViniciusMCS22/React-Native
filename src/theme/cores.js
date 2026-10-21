@@ -4,17 +4,36 @@
 // Regra importante: verde, amarelo, vermelho, azul e cinza sao reservados
 // exclusivamente ao semaforo (item 2.6 do DRDA). Nenhum elemento decorativo
 // ou de marca pode usar essas cores, senao o usuario le status onde nao ha.
-// Por isso a identidade do app e grafite/branco.
+// Por isso a identidade do app e grafite/branco. O grafite puxa para o
+// marinho do logotipo da Planengen, mas escuro o bastante para nao ser lido
+// como o azul do semaforo.
 
 export const cores = {
-  grafite: '#20262E',
-  grafiteClaro: '#3C4650',
-  texto: '#20262E',
+  grafite: '#1B2133',
+  grafiteClaro: '#3A4256',
+  texto: '#1B2133',
   textoFraco: '#5A6068',
   fundo: '#FFFFFF',
   fundoAlternativo: '#F2F4F6',
   borda: '#D8DDE3',
   branco: '#FFFFFF',
+};
+
+// Identidade Planengen. O azul da marca e proximo do azul do semaforo, entao
+// so pode aparecer em SUPERFICIES DE MARCA grandes, que nunca carregam status:
+//   - fundo do topo do Login, do cartao de saudacao do Inicio e do Sobre;
+//   - o proprio <Marca> (simbolo e nome).
+// Nunca em botoes, icones, selos, textos, barras de progresso ou graficos.
+// O marinho pode ser usado como cor estrutural (cabecalhos de navegacao).
+export const marca = {
+  azul: '#0B7BE3',
+  marinho: '#141A3A',
+  // Tracos de predio sobre o azul/marinho, como nos cartoes de visita.
+  traco: 'rgba(255, 255, 255, 0.28)',
+  // Textos secundarios sobre o azul/marinho.
+  textoSobreMarca: 'rgba(255, 255, 255, 0.82)',
+  // Caixas translucidas sobre o azul (indicadores do <PainelMarca>).
+  superficieSobreMarca: 'rgba(255, 255, 255, 0.14)',
 };
 
 // Semaforo. Cada status carrega cor, fundo, rotulo e icone porque o RNF23

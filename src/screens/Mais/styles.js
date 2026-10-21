@@ -1,6 +1,6 @@
 // src/screens/Mais/styles.js
 import { StyleSheet } from 'react-native';
-import { cores } from '../../theme/cores';
+import { cores, marca } from '../../theme/cores';
 import { espacos, raios } from '../../theme/medidas';
 
 export const styles = StyleSheet.create({
@@ -32,14 +32,13 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
-    padding: espacos.lg,
+    padding: espacos.xl,
     borderRadius: raios.lg,
-    borderWidth: 1,
-    borderColor: cores.borda,
-    backgroundColor: cores.fundo,
+    backgroundColor: marca.azul,
+    overflow: 'hidden',
   },
   perfilPressionado: {
-    opacity: 0.7,
+    opacity: 0.85,
   },
   avatar: {
     width: 56,
@@ -47,25 +46,25 @@ export const styles = StyleSheet.create({
     borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: cores.grafite,
+    backgroundColor: cores.branco,
   },
   avatarTexto: {
     fontSize: 20,
-    fontWeight: '600',
-    color: cores.branco,
+    fontWeight: '700',
+    color: marca.marinho,
   },
   perfilTextos: {
     flex: 1,
     gap: espacos.xxs,
   },
   perfilNome: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: cores.texto,
+    fontSize: 18,
+    fontWeight: '700',
+    color: cores.branco,
   },
   perfilLinha: {
     fontSize: 13,
-    color: cores.textoFraco,
+    color: marca.textoSobreMarca,
   },
   marcaPerfil: {
     flexDirection: 'row',
@@ -76,12 +75,12 @@ export const styles = StyleSheet.create({
     paddingHorizontal: espacos.sm,
     paddingVertical: espacos.xxs,
     borderRadius: raios.sm,
-    backgroundColor: cores.fundoAlternativo,
+    backgroundColor: marca.superficieSobreMarca,
   },
   marcaPerfilTexto: {
     fontSize: 12,
     fontWeight: '600',
-    color: cores.grafite,
+    color: cores.branco,
   },
 
 

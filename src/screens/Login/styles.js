@@ -1,42 +1,67 @@
 // src/screens/Login/styles.js
 import { StyleSheet } from 'react-native';
-import { cores } from '../../theme/cores';
+import { cores, marca } from '../../theme/cores';
 import { espacos, raios } from '../../theme/medidas';
 
 export const styles = StyleSheet.create({
+  // Fundo azul atras de tudo: ao puxar a rolagem, aparece azul, nao branco.
   tela: {
     flex: 1,
-    backgroundColor: cores.fundo,
+    backgroundColor: marca.azul,
+  },
+  flex: {
+    flex: 1,
   },
   conteudo: {
     flexGrow: 1,
-    justifyContent: 'center',
-    padding: espacos.xxl,
+  },
+
+  // Topo de marca
+  topo: {
+    paddingHorizontal: espacos.xxl,
+    paddingBottom: 56,
+    gap: espacos.xxl,
+    backgroundColor: marca.azul,
+    overflow: 'hidden',
+  },
+  topoTextos: {
+    gap: espacos.xs,
+  },
+  topoTitulo: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: cores.branco,
+  },
+  topoTexto: {
+    fontSize: 16,
+    lineHeight: 22,
+    color: marca.textoSobreMarca,
+    maxWidth: 280,
+  },
+
+  // Folha branca do formulario, sobreposta ao topo.
+  folha: {
+    flexGrow: 1,
+    marginTop: -espacos.xxl,
+    paddingTop: espacos.xxl,
+    paddingHorizontal: espacos.xxl,
     gap: espacos.lg,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    backgroundColor: cores.fundo,
   },
   cabecalho: {
-    alignItems: 'center',
     gap: espacos.xs,
-    marginBottom: espacos.lg,
-  },
-  logo: {
-    width: 72,
-    height: 72,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: cores.grafite,
-    marginBottom: espacos.sm,
+    marginBottom: espacos.xs,
   },
   titulo: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '700',
     color: cores.texto,
   },
   subtitulo: {
     fontSize: 15,
     color: cores.textoFraco,
-    textAlign: 'center',
   },
 
   campo: {
@@ -103,7 +128,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: raios.md,
-    backgroundColor: cores.grafite,
+    backgroundColor: marca.marinho,
     marginTop: espacos.xs,
   },
   botaoPressionado: {

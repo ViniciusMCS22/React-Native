@@ -29,7 +29,9 @@ export function useOrcamentoObra(obraId) {
       return;
     }
     try {
-      setEstado((e) => ({ ...e, carregando: true, erro: null }));
+      // Recarregar a mesma obra (ex.: ao voltar para a tela) atualiza em silencio,
+      // sem trocar o conteudo pelo indicador de carregamento.
+      setEstado((e) => ({ ...e, carregando: e.obra?.id !== obraId, erro: null }));
       const [obra, resumo] = await Promise.all([
         buscarObra(db, obraId),
         buscarResumoOrcamento(db, obraId),

@@ -1,7 +1,7 @@
 // src/screens/Sobre/styles.js
 import { StyleSheet } from 'react-native';
-import { cores } from '../../theme/cores';
-import { espacos } from '../../theme/medidas';
+import { cores, marca } from '../../theme/cores';
+import { espacos, raios } from '../../theme/medidas';
 
 export const styles = StyleSheet.create({
   tela: {
@@ -13,31 +13,29 @@ export const styles = StyleSheet.create({
     paddingBottom: espacos.xxxl,
     gap: espacos.xl,
   },
-  cabecalho: {
-    alignItems: 'center',
-    paddingVertical: espacos.lg,
-    gap: 6,
+  cartaoMarca: {
+    paddingHorizontal: espacos.xxl,
+    paddingVertical: espacos.xxxl,
+    gap: espacos.xxl,
+    borderRadius: raios.lg,
+    backgroundColor: marca.azul,
+    overflow: 'hidden',
   },
-  logo: {
-    width: 72,
-    height: 72,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: cores.grafite,
-    marginBottom: espacos.sm,
+  cartaoTextos: {
+    gap: espacos.xxs,
   },
   nome: {
     fontSize: 20,
-    fontWeight: '600',
-    color: cores.texto,
+    fontWeight: '700',
+    color: cores.branco,
   },
   versao: {
     fontSize: 14,
-    color: cores.textoFraco,
+    color: marca.textoSobreMarca,
   },
   rodape: {
     fontSize: 12,
+    lineHeight: 18,
     color: cores.textoFraco,
     textAlign: 'center',
   },

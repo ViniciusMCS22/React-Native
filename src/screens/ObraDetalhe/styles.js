@@ -175,7 +175,7 @@ export const styles = StyleSheet.create({
   botaoAtivarTexto: {
     fontSize: 15,
     fontWeight: '600',
-    color: cores.grafite,
+    color: cores.branco,
   },
   legenda: {
     flexDirection: 'row',

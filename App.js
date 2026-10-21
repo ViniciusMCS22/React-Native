@@ -16,7 +16,8 @@ export default function App() {
         <AuthProvider>
           <PreferenciasProvider>
             <ObraAtivaProvider>
-              <StatusBar style="dark" />
+              {/* Claro: cabecalhos e topo do login sao marinho/azul. */}
+              <StatusBar style="light" />
               <Navegacao />
             </ObraAtivaProvider>
           </PreferenciasProvider>

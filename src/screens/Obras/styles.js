@@ -16,11 +16,14 @@ export const styles = StyleSheet.create({
     padding: espacos.lg,
     gap: espacos.md,
   },
+  cabecalho: {
+    gap: espacos.lg,
+    marginBottom: espacos.xs,
+  },
   introducao: {
     fontSize: 14,
     lineHeight: 20,
     color: cores.textoFraco,
-    marginBottom: espacos.xs,
   },
   vazio: {
     fontSize: 15,

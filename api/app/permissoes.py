@@ -1,10 +1,3 @@
-# api/app/permissoes.py
-# Controle de acesso por perfil (RBAC), aplicado no servidor (RNF12).
-#
-# As rotas pedem uma PERMISSAO, nunca um perfil. Assim, se o cliente pedir
-# para juntar ou dividir perfis (o DRDA preve isso), muda-se so esta tabela.
-# O aplicativo recebe a lista em /auth/me e usa apenas para esconder botoes;
-# quem decide de verdade e o servidor.
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -14,7 +7,7 @@ from .database import obter_sessao
 from .models import Perfil, Usuario
 from .seguranca import TokenInvalido, ler_token
 
-# Baseado na tabela de perfis do DRDA (item 2.2).
+
 PERMISSOES: dict[Perfil, set[str]] = {
     Perfil.master: {
         "obras:ver_todas",
@@ -42,15 +35,14 @@ PERMISSOES: dict[Perfil, set[str]] = {
         "paineis:ver",
         "relatorios:ver",
     },
-    # Somente leitura do que foi liberado; sem dados tecnicos ou comerciais.
+    
     Perfil.cliente: {
         "paineis:ver",
         "relatorios:ver",
     },
 }
 
-# Desenvolvedor = uniao de todas as permissoes acima. Calculado, e nao escrito
-# a mao, para que qualquer permissao nova ja valha para ele automaticamente.
+
 PERMISSOES[Perfil.desenvolvedor] = set().union(*PERMISSOES.values())
 
 

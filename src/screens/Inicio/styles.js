@@ -1,6 +1,6 @@
 // src/screens/Inicio/styles.js
 import { StyleSheet } from 'react-native';
-import { cores } from '../../theme/cores';
+import { cores, marca } from '../../theme/cores';
 import { espacos, raios } from '../../theme/medidas';
 
 export const styles = StyleSheet.create({
@@ -19,23 +19,8 @@ export const styles = StyleSheet.create({
   },
 
   // 1. Mensagem
-  mensagem: {
-    padding: espacos.xl,
-    borderRadius: raios.lg,
-    backgroundColor: cores.grafite,
-    gap: espacos.xs,
-  },
-  data: {
-    fontSize: 13,
-    color: cores.borda,
-  },
-  saudacao: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: cores.branco,
-  },
   resumo: {
-    marginTop: espacos.md,
+    marginTop: espacos.lg,
     padding: espacos.md,
     borderRadius: raios.md,
     backgroundColor: cores.fundo,
@@ -53,14 +38,17 @@ export const styles = StyleSheet.create({
     color: cores.texto,
   },
 
+  // Traco marinho a esquerda, eco da linha do papel timbrado.
   secaoTitulo: {
     fontSize: 13,
-    fontWeight: '600',
-    color: cores.textoFraco,
+    fontWeight: '700',
+    color: marca.marinho,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 0.8,
     marginTop: espacos.sm,
-    marginLeft: espacos.xs,
+    paddingLeft: espacos.sm,
+    borderLeftWidth: 3,
+    borderLeftColor: marca.marinho,
   },
 
   cartao: {

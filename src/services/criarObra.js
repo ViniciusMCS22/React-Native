@@ -1,14 +1,4 @@
-// src/services/criarObra.js
-// Cria uma obra com seu orcamento de material usando a tabela SINAPI da UF.
-//
-// No momento da criacao:
-//   1. escolhe o mes de referencia (o mais recente publicado, por padrao);
-//   2. busca o preco SINAPI de cada material nesse mes e usa como preco
-//      previsto (PP) das composicoes;
-//   3. guarda o RETRATO desses precos em `orcamento_precos_base`.
-// Meses depois, a aba Depreciacao compara esse retrato com o SINAPI atual.
-//
-// Tudo roda numa transacao: ou a obra e criada inteira, ou nada e gravado.
+
 
 import { gerarId, agoraIso } from '../utils/id';
 import {
@@ -17,16 +7,16 @@ import {
   capturarPrecosBase,
 } from '../repositories/sinapiRepositorio';
 
-// '2026-05' -> '05/2026'
+
 function mesParaDataBase(mes) {
   const [ano, m] = mes.split('-');
   return `${m}/${ano}`;
 }
 
 /**
- * @param db  conexao expo-sqlite
- * @param dados { obra, orcamento, servicos } (formato de src/data/obras.js)
- * @param opcoes { uf = 'MA', mesReferencia } mesReferencia 'AAAA-MM' opcional
+ * @param db  
+ * @param dados 
+ * @param opcoes 
  * @returns { obraId, orcamentoId, uf, mesReferencia }
  */
 export async function criarObra(db, dados, opcoes = {}) {
@@ -37,7 +27,7 @@ export async function criarObra(db, dados, opcoes = {}) {
   if (!obra?.nome) throw new Error('Informe o nome da obra.');
   if (!mes) throw new Error(`Não há tabela SINAPI-${uf} carregada no aparelho.`);
 
-  // Valida antes de gravar: todo material precisa ter preco SINAPI no mes.
+  // O material precisa ter um texto SINAPI no mes, preciso testar oque acontece na aplicação se nada for encontrado e se as msg aparecem certas...
   const precos = {};
   const faltando = [];
   for (const srv of servicos) {

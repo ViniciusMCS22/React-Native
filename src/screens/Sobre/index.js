@@ -1,9 +1,8 @@
 // src/screens/Sobre/index.js
 import { View, Text, ScrollView, Alert } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import ItemConfiguracao from '../../components/ItemConfiguracao';
 import Grupo from '../../components/Grupo';
-import { cores } from '../../theme/cores';
+import Marca, { Ornamento } from '../../components/Marca';
 import app from '../../../app.json';
 import { styles } from './styles';
 
@@ -14,12 +13,14 @@ function emBreve(titulo) {
 export default function Sobre() {
   return (
     <ScrollView style={styles.tela} contentContainerStyle={styles.conteudo}>
-      <View style={styles.cabecalho}>
-        <View style={styles.logo}>
-          <Ionicons name="cube" size={36} color={cores.branco} />
+      {/* Superficie de marca (azul), no estilo dos cartoes de visita. */}
+      <View style={styles.cartaoMarca}>
+        <Ornamento altura={180} />
+        <Marca tamanho={40} tema="escuro" />
+        <View style={styles.cartaoTextos}>
+          <Text style={styles.nome}>Gestão de Insumos</Text>
+          <Text style={styles.versao}>Versão {app.expo.version} (protótipo)</Text>
         </View>
-        <Text style={styles.nome}>Gestão de Insumos</Text>
-        <Text style={styles.versao}>Versão {app.expo.version} (protótipo)</Text>
       </View>
 
       <Grupo>
@@ -41,7 +42,9 @@ export default function Sobre() {
         />
       </Grupo>
 
-      <Text style={styles.rodape}>Preços de referência: SINAPI / MA</Text>
+      <Text style={styles.rodape}>
+        Preços de referência: SINAPI / MA{'\n'}© Planengen Consultoria e Construção LTDA
+      </Text>
     </ScrollView>
   );
 }

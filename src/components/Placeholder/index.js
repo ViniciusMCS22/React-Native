@@ -3,6 +3,7 @@
 
 import { View, Text } from 'react-native';
 import { useObraAtiva } from '../../contexts/ObraAtivaContext';
+import PainelMarca from '../PainelMarca';
 import { styles } from './styles';
 
 export default function Placeholder({ titulo, descricao, versaoPrevista }) {
@@ -10,13 +11,14 @@ export default function Placeholder({ titulo, descricao, versaoPrevista }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.titulo}>{titulo}</Text>
-      {descricao ? <Text style={styles.descricao}>{descricao}</Text> : null}
+      <PainelMarca
+        sobretitulo={obraAtiva ? obraAtiva.nome : 'Nenhuma obra ativa'}
+        titulo={titulo}
+        descricao={descricao}
+      />
 
       <View style={styles.rodape}>
-        <Text style={styles.meta}>
-          Obra ativa: {obraAtiva ? obraAtiva.nome : 'nenhuma selecionada'}
-        </Text>
+        <Text style={styles.titulo}>Em construção</Text>
         {versaoPrevista ? (
           <Text style={styles.meta}>Previsto para a versão {versaoPrevista}</Text>
         ) : null}

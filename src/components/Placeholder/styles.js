@@ -1,31 +1,25 @@
 // src/components/Placeholder/styles.js
 import { StyleSheet } from 'react-native';
 import { cores } from '../../theme/cores';
-import { espacos } from '../../theme/medidas';
+import { espacos, raios } from '../../theme/medidas';
 
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: cores.fundo,
-    padding: espacos.xxl,
-    justifyContent: 'center',
+    padding: espacos.lg,
+    gap: espacos.lg,
   },
   titulo: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: '600',
     color: cores.texto,
-    marginBottom: espacos.sm,
-  },
-  descricao: {
-    fontSize: 15,
-    lineHeight: 22,
-    color: cores.textoFraco,
   },
   rodape: {
-    marginTop: espacos.xxl,
-    paddingTop: espacos.lg,
-    borderTopWidth: 1,
-    borderTopColor: cores.borda,
+    padding: espacos.lg,
+    borderRadius: raios.lg,
+    borderWidth: 1,
+    borderColor: cores.borda,
     gap: espacos.xs,
   },
   meta: {

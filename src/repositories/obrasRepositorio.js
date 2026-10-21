@@ -46,7 +46,8 @@ export async function buscarResumoOrcamento(db, obraId) {
 
   const totais = await db.getFirstAsync(
     `SELECT COALESCE(SUM(${QTD_PLANEJADA} * si.preco_unitario), 0) AS custo_material,
-            COUNT(DISTINCT s.id)          AS qtd_servicos,
+            -- Conta so servicos com material (o de avulsos pode ficar vazio).
+            COUNT(DISTINCT si.servico_id) AS qtd_servicos,
             COUNT(DISTINCT si.insumo_id)  AS qtd_materiais,
             COUNT(DISTINCT s.etapa)       AS qtd_etapas
        FROM servicos s
