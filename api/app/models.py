@@ -28,12 +28,11 @@ def novo_id() -> str:
 
 
 class Perfil(str, enum.Enum):
-    # DRDA 2.2. Os outros perfis (compras, obra) entram depois.
+  
     master = "master"
     orcamentista = "orcamentista"
     cliente = "cliente"
-    # Fora do DRDA: conta da equipe de desenvolvimento, com todas as permissoes.
-    # So existe nos usuarios de teste (seed), que nao rodam em producao.
+
     desenvolvedor = "desenvolvedor"
 
 
