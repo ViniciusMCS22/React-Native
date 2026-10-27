@@ -2,7 +2,8 @@
 import { View, Text, ScrollView, Alert } from 'react-native';
 import ItemConfiguracao from '../../components/ItemConfiguracao';
 import Grupo from '../../components/Grupo';
-import Marca, { Ornamento } from '../../components/Marca';
+import Marca from '../../components/Marca';
+import Vidro from '../../components/Vidro';
 import app from '../../../app.json';
 import { styles } from './styles';
 
@@ -13,15 +14,14 @@ function emBreve(titulo) {
 export default function Sobre() {
   return (
     <ScrollView style={styles.tela} contentContainerStyle={styles.conteudo}>
-      {/* Superficie de marca (azul), no estilo dos cartoes de visita. */}
-      <View style={styles.cartaoMarca}>
-        <Ornamento altura={180} />
+      {/* Superficie de marca (vidro azul), no estilo dos cartoes de visita. */}
+      <Vidro ornamento={180} style={styles.cartaoMarca}>
         <Marca tamanho={40} tema="escuro" />
         <View style={styles.cartaoTextos}>
           <Text style={styles.nome}>Gestão de Insumos</Text>
           <Text style={styles.versao}>Versão {app.expo.version} (protótipo)</Text>
         </View>
-      </View>
+      </Vidro>
 
       <Grupo>
         <ItemConfiguracao

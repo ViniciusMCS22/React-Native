@@ -17,9 +17,6 @@ export const styles = StyleSheet.create({
     paddingHorizontal: espacos.xxl,
     paddingVertical: espacos.xxxl,
     gap: espacos.xxl,
-    borderRadius: raios.lg,
-    backgroundColor: marca.azul,
-    overflow: 'hidden',
   },
   cartaoTextos: {
     gap: espacos.xxs,

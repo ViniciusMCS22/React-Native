@@ -21,7 +21,8 @@ export const cores = {
 
 // Identidade Planengen. O azul da marca e proximo do azul do semaforo, entao
 // so pode aparecer em SUPERFICIES DE MARCA grandes, que nunca carregam status:
-//   - fundo do topo do Login, do cartao de saudacao do Inicio e do Sobre;
+//   - o <Vidro>: painel de abertura das abas (<PainelMarca>) e os cartoes
+//     de marca do Login, do Sobre e do perfil no Mais;
 //   - o proprio <Marca> (simbolo e nome).
 // Nunca em botoes, icones, selos, textos, barras de progresso ou graficos.
 // O marinho pode ser usado como cor estrutural (cabecalhos de navegacao).
@@ -30,10 +31,27 @@ export const marca = {
   marinho: '#141A3A',
   // Tracos de predio sobre o azul/marinho, como nos cartoes de visita.
   traco: 'rgba(255, 255, 255, 0.28)',
+  // Os mesmos tracos "atras do vidro" (<Vidro>): linha translucida e um halo
+  // em volta, que juntos parecem uma faixa de luz desfocada.
+  tracoDesfocado: 'rgba(190, 232, 255, 0.30)',
+  haloTraco: 'rgba(150, 215, 255, 0.28)',
   // Textos secundarios sobre o azul/marinho.
   textoSobreMarca: 'rgba(255, 255, 255, 0.82)',
   // Caixas translucidas sobre o azul (indicadores do <PainelMarca>).
   superficieSobreMarca: 'rgba(255, 255, 255, 0.14)',
+  // Reflexo do <Vidro>: contorno (forte no alto e a esquerda, fraco embaixo e
+  // a direita) e brilho diagonal (forte no canto de cima, leve no de baixo).
+  bordaVidro: 'rgba(255, 255, 255, 0.15)',
+  reflexoVidro: 'rgba(255, 255, 255, 0.7)',
+  brilhoVidro: 'rgba(255, 255, 255, 0.24)',
+  brilhoVidroBase: 'rgba(255, 255, 255, 0.10)',
+  // <Vidro>: pontas do degrade atras do vidro (o meio e o `azul`), tom do
+  // vidro nativo (translucido, para o degrade aparecer) e a sombra por fora.
+  // As pontas ficam escuras o bastante para o texto branco manter contraste.
+  vidroEscuro: '#0A3F9C',
+  vidroClaro: '#2E9BF5',
+  tomVidro: 'rgba(11, 123, 227, 0.25)',
+  sombraVidro: 'rgba(11, 123, 227, 0.35)',
 };
 
 // Semaforo. Cada status carrega cor, fundo, rotulo e icone porque o RNF23

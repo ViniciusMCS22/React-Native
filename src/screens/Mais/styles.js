@@ -33,9 +33,9 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 14,
     padding: espacos.xl,
-    borderRadius: raios.lg,
-    backgroundColor: marca.azul,
-    overflow: 'hidden',
+  },
+  perfilEncolhido: {
+    transform: [{ scale: 0.98 }],
   },
   perfilPressionado: {
     opacity: 0.85,

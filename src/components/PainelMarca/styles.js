@@ -4,13 +4,11 @@ import { cores, marca } from '../../theme/cores';
 import { espacos, raios } from '../../theme/medidas';
 
 export const styles = StyleSheet.create({
+  // Fundo, raio e borda vem do <Vidro>.
   painel: {
     padding: espacos.xl,
     paddingTop: espacos.xxl,
-    borderRadius: raios.lg,
-    backgroundColor: marca.azul,
     gap: espacos.xs,
-    overflow: 'hidden',
   },
   painelCompacto: {
     paddingVertical: espacos.lg,

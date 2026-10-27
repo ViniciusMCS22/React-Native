@@ -11,7 +11,7 @@ import { useObraAtiva } from '../../contexts/ObraAtivaContext';
 import { usePreferencias } from '../../contexts/PreferenciasContext';
 import ItemConfiguracao from '../../components/ItemConfiguracao';
 import Secao from '../../components/Secao';
-import { Ornamento } from '../../components/Marca';
+import Vidro from '../../components/Vidro';
 import { ROTULOS_PERFIL } from '../../config/perfis';
 import { requisicao } from '../../services/api';
 import { cores } from '../../theme/cores';
@@ -117,28 +117,30 @@ export default function Mais({ navigation }) {
 
   return (
     <ScrollView style={styles.tela} contentContainerStyle={styles.conteudo}>
-      {/* Perfil: e a superficie de marca (azul) desta tela, sempre a primeira. */}
+      {/* Perfil: e a superficie de marca (vidro azul) desta tela, sempre a primeira.
+          Ao tocar, encolhe em vez de ficar transparente: opacidade atrapalha o vidro. */}
       <Pressable
-        style={({ pressed }) => [styles.perfil, pressed && styles.perfilPressionado]}
+        style={({ pressed }) => pressed && styles.perfilEncolhido}
         onPress={() => Alert.alert('Perfil', 'Edição de perfil prevista para a versão 0.4.1.')}
         accessibilityRole="button"
         accessibilityLabel={`Perfil de ${usuario.nome}, ${ROTULOS_PERFIL[usuario.perfil]}`}
       >
-        <Ornamento altura={150} />
-        <View style={styles.avatar}>
-          <Text style={styles.avatarTexto}>{iniciais(usuario.nome)}</Text>
-        </View>
-        <View style={styles.perfilTextos}>
-          <Text style={styles.perfilNome}>{usuario.nome}</Text>
-          <Text style={styles.perfilLinha}>{usuario.email}</Text>
-          <View style={styles.marcaPerfil}>
-            <Ionicons name="shield-checkmark-outline" size={14} color={cores.branco} />
-            <Text style={styles.marcaPerfilTexto}>
-              {ROTULOS_PERFIL[usuario.perfil] ?? usuario.perfil}
-            </Text>
+        <Vidro ornamento={150} style={styles.perfil}>
+          <View style={styles.avatar}>
+            <Text style={styles.avatarTexto}>{iniciais(usuario.nome)}</Text>
           </View>
-        </View>
-        <Ionicons name="chevron-forward" size={18} color={cores.branco} />
+          <View style={styles.perfilTextos}>
+            <Text style={styles.perfilNome}>{usuario.nome}</Text>
+            <Text style={styles.perfilLinha}>{usuario.email}</Text>
+            <View style={styles.marcaPerfil}>
+              <Ionicons name="shield-checkmark-outline" size={14} color={cores.branco} />
+              <Text style={styles.marcaPerfilTexto}>
+                {ROTULOS_PERFIL[usuario.perfil] ?? usuario.perfil}
+              </Text>
+            </View>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={cores.branco} />
+        </Vidro>
       </Pressable>
 
       {erro ? (

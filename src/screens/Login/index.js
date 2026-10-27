@@ -11,9 +11,11 @@ import {
   Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
-import Marca, { Ornamento } from '../../components/Marca';
+import Marca from '../../components/Marca';
+import Vidro from '../../components/Vidro';
 import { ROTULOS_PERFIL, USUARIOS_TESTE } from '../../config/perfis';
 import { URL_API } from '../../services/api';
 import { cores } from '../../theme/cores';
@@ -64,14 +66,21 @@ export default function Login() {
 
   return (
     <View style={styles.tela}>
+      {/* Fundo claro nesta tela: icones escuros na barra de status. */}
+      <StatusBar style="dark" />
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <ScrollView contentContainerStyle={styles.conteudo} keyboardShouldPersistTaps="handled">
-          {/* Topo azul: superficie de marca, nunca carrega status. */}
-          <View style={[styles.topo, { paddingTop: insets.top + 40 }]}>
-            <Ornamento altura={230} />
+        <ScrollView
+          contentContainerStyle={[
+            styles.conteudo,
+            { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 24 },
+          ]}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* Cartao de marca em vidro azul, o mesmo padrao das abas. */}
+          <Vidro ornamento={230} style={styles.topo}>
             <Marca tamanho={46} tema="escuro" />
             <View style={styles.topoTextos}>
               <Text style={styles.topoTitulo}>Gestão de Insumos</Text>
@@ -79,9 +88,9 @@ export default function Login() {
                 O planejamento da sua obra, do orçamento à compra.
               </Text>
             </View>
-          </View>
+          </Vidro>
 
-          <View style={[styles.folha, { paddingBottom: insets.bottom + 24 }]}>
+          <View style={styles.folha}>
             <View style={styles.cabecalho}>
               <Text style={styles.titulo}>Entrar</Text>
               <Text style={styles.subtitulo}>Use a conta fornecida pelo gestor.</Text>

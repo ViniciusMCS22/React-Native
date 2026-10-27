@@ -4,25 +4,25 @@ import { cores, marca } from '../../theme/cores';
 import { espacos, raios } from '../../theme/medidas';
 
 export const styles = StyleSheet.create({
-  // Fundo azul atras de tudo: ao puxar a rolagem, aparece azul, nao branco.
   tela: {
     flex: 1,
-    backgroundColor: marca.azul,
+    backgroundColor: cores.fundoAlternativo,
   },
   flex: {
     flex: 1,
   },
   conteudo: {
     flexGrow: 1,
+    justifyContent: 'center',
+    paddingHorizontal: espacos.lg,
+    gap: espacos.lg,
   },
 
-  // Topo de marca
+  // Cartao de marca. Fundo, raio e borda vem do <Vidro>.
   topo: {
-    paddingHorizontal: espacos.xxl,
-    paddingBottom: 56,
+    padding: espacos.xxl,
+    paddingTop: espacos.xxxl,
     gap: espacos.xxl,
-    backgroundColor: marca.azul,
-    overflow: 'hidden',
   },
   topoTextos: {
     gap: espacos.xs,
@@ -39,15 +39,13 @@ export const styles = StyleSheet.create({
     maxWidth: 280,
   },
 
-  // Folha branca do formulario, sobreposta ao topo.
+  // Cartao branco do formulario.
   folha: {
-    flexGrow: 1,
-    marginTop: -espacos.xxl,
-    paddingTop: espacos.xxl,
-    paddingHorizontal: espacos.xxl,
+    padding: espacos.xl,
     gap: espacos.lg,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    borderRadius: raios.lg,
+    borderWidth: 1,
+    borderColor: cores.borda,
     backgroundColor: cores.fundo,
   },
   cabecalho: {

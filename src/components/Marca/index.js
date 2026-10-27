@@ -28,7 +28,8 @@ const SEGMENTOS = [
   [0.54, 0.7, 0.54, 1],
 ];
 
-function Linha({ x1, y1, x2, y2, espessura, cor }) {
+// `brilho` (opcional): cor de um halo desfocado em volta da linha (boxShadow).
+function Linha({ x1, y1, x2, y2, espessura, cor, brilho }) {
   const dx = x2 - x1;
   const dy = y2 - y1;
   // Soma a espessura no comprimento para as pontas se encontrarem sem falha.
@@ -45,13 +46,14 @@ function Linha({ x1, y1, x2, y2, espessura, cor }) {
           left: (x1 + x2) / 2 - comprimento / 2,
           top: (y1 + y2) / 2 - espessura / 2,
           transform: [{ rotate: `${angulo}rad` }],
+          boxShadow: brilho ? `0 0 ${espessura * 4}px ${espessura * 1.5}px ${brilho}` : undefined,
         },
       ]}
     />
   );
 }
 
-export function Simbolo({ altura = 40, cor = marca.azul, espessura, style }) {
+export function Simbolo({ altura = 40, cor = marca.azul, espessura, brilho, style }) {
   const h = altura;
   const t = espessura ?? Math.max(1, Math.round(h * 0.035));
 
@@ -71,6 +73,7 @@ export function Simbolo({ altura = 40, cor = marca.azul, espessura, style }) {
           y2={y2 * h}
           espessura={t}
           cor={cor}
+          brilho={brilho}
         />
       ))}
     </View>
@@ -79,14 +82,22 @@ export function Simbolo({ altura = 40, cor = marca.azul, espessura, style }) {
 
 // Simbolos grandes cortados nos cantos, como nos cartoes de visita da marca.
 // Usar so dentro de superficies de marca com overflow: 'hidden'.
-export function Ornamento({ altura = 200, cor = marca.traco }) {
+// Com `brilho`, as linhas ganham um halo e parecem vistas atraves de vidro.
+export function Ornamento({ altura = 200, cor = marca.traco, espessura = 1.5, brilho }) {
   return (
     <>
-      <Simbolo altura={altura} cor={cor} espessura={1.5} style={styles.ornamentoTopo} />
+      <Simbolo
+        altura={altura}
+        cor={cor}
+        espessura={espessura}
+        brilho={brilho}
+        style={styles.ornamentoTopo}
+      />
       <Simbolo
         altura={altura * 0.6}
         cor={cor}
-        espessura={1.5}
+        espessura={espessura}
+        brilho={brilho}
         style={[styles.ornamentoBase, { bottom: -altura * 0.22 }]}
       />
     </>

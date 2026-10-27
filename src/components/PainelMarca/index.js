@@ -1,5 +1,6 @@
 // src/components/PainelMarca/index.js
-// Painel azul de abertura das telas, com os tracos do logotipo nos cantos.
+// Painel azul de abertura das telas, em vidro (<Vidro>, liquid glass no iOS 26+)
+// e com os tracos do logotipo nos cantos.
 // E a unica superficie azul de cada tela, por isso segue regras fixas para o
 // app nao ficar confuso:
 //   - sempre o primeiro elemento da tela, no maximo um por tela;
@@ -11,7 +12,7 @@
 //   obras, valor previsto). Nada que seja bom/ruim.
 
 import { View, Text } from 'react-native';
-import { Ornamento } from '../Marca';
+import Vidro from '../Vidro';
 import { styles } from './styles';
 
 export default function PainelMarca({
@@ -24,9 +25,10 @@ export default function PainelMarca({
   style,
 }) {
   return (
-    <View style={[styles.painel, compacto && styles.painelCompacto, style]}>
-      <Ornamento altura={compacto ? 140 : 170} />
-
+    <Vidro
+      ornamento={compacto ? 140 : 170}
+      style={[styles.painel, compacto && styles.painelCompacto, style]}
+    >
       {sobretitulo ? <Text style={styles.sobretitulo}>{sobretitulo}</Text> : null}
       <Text style={[styles.titulo, compacto && styles.tituloCompacto]} accessibilityRole="header">
         {titulo}
@@ -49,6 +51,6 @@ export default function PainelMarca({
       ) : null}
 
       {children}
-    </View>
+    </Vidro>
   );
 }
