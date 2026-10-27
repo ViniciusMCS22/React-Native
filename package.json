@@ -7,7 +7,8 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "api": "cd api && .venv\\Scripts\\python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000"
+    "api": "cd api && .venv\\Scripts\\python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000",
+    "sinapi:importar": "cd api && .venv\\Scripts\\python -m app.importar_sinapi"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",

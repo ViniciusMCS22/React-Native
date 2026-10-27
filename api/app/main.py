@@ -9,9 +9,9 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .database import Base, SessaoLocal, engine
-from .rotas import auth, exemplos
-from .seed import criar_usuarios_teste
+from .database import Base, SessaoLocal, atualizar_banco_antigo, engine
+from .rotas import auth, exemplos, obras, sinapi
+from .seed import criar_obra_exemplo, criar_usuarios_teste, popular_sinapi
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 
@@ -21,8 +21,11 @@ async def ciclo_de_vida(_: FastAPI):
     # Fase de prototipo: cria as tabelas direto. Quando o modelo estabilizar,
     # trocar por migracoes (Alembic), como ja e feito no banco do aplicativo.
     Base.metadata.create_all(engine)
+    atualizar_banco_antigo()
     with SessaoLocal() as sessao:
         criar_usuarios_teste(sessao)
+        popular_sinapi(sessao)
+        criar_obra_exemplo(sessao)
     yield
 
 
@@ -43,6 +46,8 @@ app.add_middleware(
 
 app.include_router(auth.router)
 app.include_router(exemplos.router)
+app.include_router(obras.router)
+app.include_router(sinapi.router)
 
 
 @app.get("/saude", tags=["Infra"])

@@ -1,9 +1,9 @@
 // src/database/index.js
 // Ponto de entrada do banco local. O App passa `inicializarBanco` para o
 // <SQLiteProvider onInit>, que roda antes de qualquer tela aparecer.
+// Obras e SINAPI vem da API; aqui so ha preferencias e a copia offline.
 
 import { VERSAO_BANCO, migracoes } from './schema';
-import { popularSinapiSeVazio, popularObrasSeVazio, garantirPrecosBase } from './seed';
 
 export const NOME_BANCO = 'gestao-insumos.db';
 
@@ -30,7 +30,4 @@ export async function inicializarBanco(db) {
   // Precisa ser ligado a cada conexao; o SQLite nao guarda essa opcao.
   await db.execAsync('PRAGMA foreign_keys = ON;');
   await migrar(db);
-  await popularSinapiSeVazio(db);
-  await popularObrasSeVazio(db);
-  await garantirPrecosBase(db);
 }

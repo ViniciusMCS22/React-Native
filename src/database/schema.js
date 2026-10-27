@@ -1,7 +1,11 @@
 // src/database/schema.js
 // Estrutura do banco local (SQLite no aparelho).
 //
-// Hierarquia (item 4.1 da solicitacao):
+// Desde a v5, obras, insumos e SINAPI vivem na API (api/). O app usa este
+// banco so para as preferencias e para a copia offline das respostas da API
+// (cache_api). As tabelas de obra abaixo ficaram das versoes anteriores.
+//
+// Hierarquia antiga (item 4.1 da solicitacao):
 //   obra -> orcamento -> servico -> servico_insumos -> insumo
 //
 // O projeto controla APENAS custo de material. A tabela `insumos` tem um CHECK
@@ -19,7 +23,7 @@
 //
 // Toda consulta de leitura deve filtrar `excluido_em IS NULL`.
 
-export const VERSAO_BANCO = 4;
+export const VERSAO_BANCO = 5;
 
 const colunasSync = `
   criado_em      TEXT NOT NULL,
@@ -192,5 +196,17 @@ export const migracoes = [
   UPDATE servicos SET descricao = 'Reboco (massa única) em paredes, e = 2 cm' WHERE descricao = 'Reboco (massa unica) em paredes, e = 2 cm';
   UPDATE servicos SET descricao = 'Piso cerâmico 45x45 cm assentado com argamassa colante' WHERE descricao = 'Piso ceramico 45x45 cm assentado com argamassa colante';
   UPDATE servicos SET descricao = 'Pintura acrílica em paredes, duas demãos' WHERE descricao = 'Pintura acrilica em paredes, duas demaos';
+  `,
+
+  // v5: obras, insumos e SINAPI passaram para a API. As tabelas acima ficam
+  // (migracao publicada nao se desfaz), mas o app nao le mais delas.
+  // Esta guarda a ULTIMA resposta de cada leitura da API, para mostrar dados
+  // basicos sem internet. Chave = usuario + caminho, valor = JSON da resposta.
+  `
+  CREATE TABLE cache_api (
+    chave          TEXT PRIMARY KEY NOT NULL,
+    valor          TEXT NOT NULL,
+    atualizado_em  TEXT NOT NULL
+  );
   `,
 ];

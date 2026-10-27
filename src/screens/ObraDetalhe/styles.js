@@ -1,6 +1,6 @@
 // src/screens/ObraDetalhe/styles.js
 import { StyleSheet } from 'react-native';
-import { cores } from '../../theme/cores';
+import { cores, marca } from '../../theme/cores';
 import { espacos, raios } from '../../theme/medidas';
 
 export const styles = StyleSheet.create({
@@ -59,7 +59,7 @@ export const styles = StyleSheet.create({
     padding: espacos.xxl,
   },
 
-  // Seletor "Por servico / Por material"
+  // Seletor "Insumos / Depreciacao"
   seletor: {
     flexDirection: 'row',
     borderWidth: 1,
@@ -86,44 +86,7 @@ export const styles = StyleSheet.create({
     color: cores.branco,
   },
 
-  // Cabecalho de cada servico
-  secao: {
-    marginTop: espacos.lg,
-    gap: espacos.sm,
-  },
-  etapa: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: cores.textoFraco,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  secaoCartao: {
-    backgroundColor: cores.fundoAlternativo,
-    borderRadius: raios.md,
-    padding: espacos.md,
-    gap: espacos.xxs,
-  },
-  secaoCodigo: {
-    fontSize: 12,
-    color: cores.textoFraco,
-  },
-  secaoTitulo: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: cores.texto,
-  },
-  secaoMeta: {
-    fontSize: 13,
-    color: cores.textoFraco,
-  },
-  secaoTotal: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: cores.texto,
-  },
-
-  // Linha de material
+  // Linha da depreciacao
   item: {
     paddingVertical: 10,
     paddingHorizontal: espacos.md,
@@ -218,5 +181,25 @@ export const styles = StyleSheet.create({
     fontSize: 13,
     textAlign: 'right',
     color: cores.texto,
+  },
+  separador: {
+    height: espacos.sm,
+  },
+  botaoAdicionar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: espacos.xs,
+    minHeight: 48,
+    borderRadius: raios.md,
+    backgroundColor: marca.marinho,
+  },
+  botaoPressionado: {
+    opacity: 0.8,
+  },
+  botaoAdicionarTexto: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: cores.branco,
   },
 });

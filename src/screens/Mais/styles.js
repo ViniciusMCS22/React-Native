@@ -1,6 +1,6 @@
 // src/screens/Mais/styles.js
 import { StyleSheet } from 'react-native';
-import { cores, marca } from '../../theme/cores';
+import { cores, marca, perigo } from '../../theme/cores';
 import { espacos, raios } from '../../theme/medidas';
 
 export const styles = StyleSheet.create({
@@ -150,5 +150,64 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: cores.grafite,
+  },
+
+  // Zona de perigo
+  perigo: {
+    padding: espacos.lg,
+    borderRadius: raios.lg,
+    borderWidth: 1.5,
+    borderColor: perigo.cor,
+    backgroundColor: cores.fundo,
+    gap: espacos.sm,
+  },
+  perigoTopo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: espacos.sm,
+  },
+  perigoTitulo: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: perigo.cor,
+  },
+  perigoTexto: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: cores.textoFraco,
+  },
+  perigoItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: espacos.md,
+    marginTop: espacos.xs,
+    paddingTop: espacos.md,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: cores.borda,
+  },
+  perigoItemTextos: {
+    flex: 1,
+    gap: espacos.xxs,
+  },
+  perigoItemTitulo: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: cores.texto,
+  },
+  perigoBotao: {
+    minHeight: 40,
+    justifyContent: 'center',
+    paddingHorizontal: espacos.lg,
+    borderRadius: raios.md,
+    borderWidth: 1,
+    borderColor: perigo.cor,
+  },
+  perigoBotaoPressionado: {
+    backgroundColor: perigo.fundo,
+  },
+  perigoBotaoTexto: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: perigo.cor,
   },
 });

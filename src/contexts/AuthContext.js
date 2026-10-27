@@ -1,13 +1,21 @@
 // src/contexts/AuthContext.js
 // Usuario logado e suas permissoes, disponiveis para todas as telas.
 // A navegacao usa `usuario` para decidir entre a tela de login e as abas.
+// Sem internet ao abrir o app, a sessao salva continua (usuario.offline) e as
+// telas mostram a copia local dos dados.
+//
+// Precisa estar dentro do <SQLiteProvider> (ver App.js): ao sair, apaga a
+// copia local dos dados da API.
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useSQLiteContext } from 'expo-sqlite';
 import * as api from '../services/api';
+import { limparCache } from '../repositories/cacheRepositorio';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
+  const db = useSQLiteContext();
   const [usuario, setUsuario] = useState(null);
   const [carregando, setCarregando] = useState(true);
   // Erro ao restaurar a sessao salva (ex.: API fora do ar ao abrir o app).
@@ -42,8 +50,9 @@ export function AuthProvider({ children }) {
 
   const sair = useCallback(async () => {
     await api.logout();
+    await limparCache(db);
     setUsuario(null);
-  }, []);
+  }, [db]);
 
   const temPermissao = useCallback(
     (permissao) => Boolean(usuario?.permissoes?.includes(permissao)),

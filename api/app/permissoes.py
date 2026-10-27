@@ -11,6 +11,7 @@ from .seguranca import TokenInvalido, ler_token
 PERMISSOES: dict[Perfil, set[str]] = {
     Perfil.master: {
         "obras:ver_todas",
+        "obras:excluir",
         "orcamentos:ver",
         "orcamentos:editar",
         "orcamentos:importar",

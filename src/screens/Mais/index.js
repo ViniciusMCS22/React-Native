@@ -14,7 +14,7 @@ import Secao from '../../components/Secao';
 import Vidro from '../../components/Vidro';
 import { ROTULOS_PERFIL } from '../../config/perfis';
 import { requisicao } from '../../services/api';
-import { cores } from '../../theme/cores';
+import { cores, perigo } from '../../theme/cores';
 import app from '../../../app.json';
 import { styles } from './styles';
 
@@ -285,6 +285,39 @@ export default function Mais({ navigation }) {
         <Ionicons name="log-out-outline" size={20} color={cores.grafite} />
         <Text style={styles.botaoSairTexto}>Sair da conta</Text>
       </Pressable>
+
+      {/* Zona de perigo (como no GitHub): acoes irreversiveis, so para quem
+          pode apagar obras (master e desenvolvedor). Vermelho por excecao
+          aprovada, ver `perigo` em theme/cores. */}
+      {temPermissao('obras:excluir') ? (
+        <View style={styles.perigo}>
+          <View style={styles.perigoTopo}>
+            <Ionicons name="warning-outline" size={20} color={perigo.cor} />
+            <Text style={styles.perigoTitulo} accessibilityRole="header">
+              Zona de perigo
+            </Text>
+          </View>
+          <Text style={styles.perigoTexto}>
+            Ações que não podem ser desfeitas. Visível apenas para Master e Desenvolvedor.
+          </Text>
+          <View style={styles.perigoItem}>
+            <View style={styles.perigoItemTextos}>
+              <Text style={styles.perigoItemTitulo}>Apagar obra</Text>
+              <Text style={styles.perigoTexto}>
+                Remove a obra e o orçamento dela para todos os usuários.
+              </Text>
+            </View>
+            <Pressable
+              style={({ pressed }) => [styles.perigoBotao, pressed && styles.perigoBotaoPressionado]}
+              onPress={() => navigation.navigate('ApagarObra')}
+              accessibilityRole="button"
+              accessibilityLabel="Apagar obra"
+            >
+              <Text style={styles.perigoBotaoTexto}>Apagar</Text>
+            </Pressable>
+          </View>
+        </View>
+      ) : null}
     </ScrollView>
   );
 }

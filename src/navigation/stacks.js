@@ -9,6 +9,7 @@ import { cores, marca } from '../theme/cores';
 import Inicio from '../screens/Inicio';
 import Obras from '../screens/Obras';
 import ObraDetalhe from '../screens/ObraDetalhe';
+import NovaObra from '../screens/NovaObra';
 import Insumos from '../screens/Insumos';
 import InsumoDetalhe from '../screens/InsumoDetalhe';
 import InsumoNovo from '../screens/InsumoNovo';
@@ -17,6 +18,7 @@ import Mais from '../screens/Mais';
 import Login from '../screens/Login';
 import LegendaIndicadores from '../screens/LegendaIndicadores';
 import Sobre from '../screens/Sobre';
+import ApagarObra from '../screens/ApagarObra';
 
 // Cabecalho marinho em todas as abas: e a cor estrutural da marca e nao
 // conflita com o semaforo (ver theme/cores.js).
@@ -58,6 +60,17 @@ export function ObrasStack() {
         name="ObraDetalhe"
         component={ObraDetalhe}
         options={{ title: 'Obra' }}
+      />
+      <StackObras.Screen
+        name="NovaObra"
+        component={NovaObra}
+        options={{ title: 'Nova obra' }}
+      />
+      {/* A mesma tela da aba Insumos, aberta pelo detalhe de qualquer obra. */}
+      <StackObras.Screen
+        name="InsumoNovo"
+        component={InsumoNovo}
+        options={{ title: 'Adicionar insumo' }}
       />
     </StackObras.Navigator>
   );
@@ -117,6 +130,11 @@ export function MaisStack() {
         name="Sobre"
         component={Sobre}
         options={{ title: 'Sobre' }}
+      />
+      <StackMais.Screen
+        name="ApagarObra"
+        component={ApagarObra}
+        options={{ title: 'Apagar obra' }}
       />
     </StackMais.Navigator>
   );

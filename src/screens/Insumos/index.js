@@ -1,21 +1,23 @@
 // src/screens/Insumos/index.js
-// Insumos (materiais) do orcamento da obra ativa:
+// Insumos (materiais) da obra ativa, lidos da API:
 //   1. Resumo geral (quantidade de insumos, valor total, BDI, categorias).
-//   2. Lista consolidada: quantidade, valor unitario e total de cada insumo.
+//   2. Lista: quantidade, valor unitario (SINAPI) e total de cada insumo.
 //   3. Adicionar/remover: so com 'orcamentos:editar' (master, orcamentista e
-//      desenvolvedor). Para os outros perfis os botoes nem aparecem.
+//      desenvolvedor) e com internet. Para os outros perfis os botoes nem
+//      aparecem; a API tambem recusa.
 
 import { useCallback } from 'react';
-import { View, Text, FlatList, Pressable, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, FlatList, Pressable, ActivityIndicator } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { useSQLiteContext } from 'expo-sqlite';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import { useObraAtiva } from '../../contexts/ObraAtivaContext';
 import { useOrcamentoObra } from '../../hooks/useOrcamentoObra';
-import { removerInsumo } from '../../repositories/insumosRepositorio';
+import { removerInsumo } from '../../repositories/obrasRepositorio';
+import AvisoOffline from '../../components/AvisoOffline';
+import ItemInsumo, { confirmarRemocao } from '../../components/ItemInsumo';
 import PainelMarca from '../../components/PainelMarca';
-import { moeda, numero, quantidade, percentual } from '../../utils/formatacao';
+import { moeda, numero, percentual } from '../../utils/formatacao';
 import { cores } from '../../theme/cores';
 import { styles } from './styles';
 
@@ -28,9 +30,8 @@ function Campo({ rotulo, valor, destaque }) {
   );
 }
 
-function Resumo({ resumo, materiais }) {
-  const categorias = new Set(materiais.map((m) => m.categoria ?? 'Sem categoria'));
-  const maior = materiais[0];
+function Resumo({ resumo, insumos }) {
+  const maior = insumos[0];
   return (
     <View style={styles.cartao}>
       <Text style={styles.cartaoTitulo}>Resumo geral</Text>
@@ -39,8 +40,8 @@ function Resumo({ resumo, materiais }) {
         rotulo={`Com BDI (${numero(resumo.bdi_percentual, 2)}%)`}
         valor={moeda(resumo.custo_material_com_bdi)}
       />
-      <Campo rotulo="Insumos diferentes" valor={String(materiais.length)} />
-      <Campo rotulo="Categorias" valor={String(categorias.size)} />
+      <Campo rotulo="Insumos diferentes" valor={String(resumo.qtd_insumos)} />
+      <Campo rotulo="Categorias" valor={String(resumo.qtd_categorias)} />
       {maior ? (
         <Campo
           rotulo="Maior custo"
@@ -54,64 +55,11 @@ function Resumo({ resumo, materiais }) {
   );
 }
 
-function ItemInsumo({ item, podeEditar, aoAbrir, aoRemover }) {
-  return (
-    <Pressable
-      style={({ pressed }) => [styles.item, pressed && styles.itemPressionado]}
-      onPress={aoAbrir}
-      accessibilityRole="button"
-      accessibilityLabel={`${item.descricao}, ${quantidade(
-        item.quantidade_planejada,
-        item.unidade
-      )}, total ${moeda(item.custo_previsto)}`}
-    >
-      <View style={styles.itemTopo}>
-        <View style={styles.itemTextos}>
-          <Text style={styles.itemNome}>{item.descricao}</Text>
-          <Text style={styles.itemMeta}>
-            {item.codigo} - {item.categoria ?? 'Sem categoria'}
-          </Text>
-        </View>
-        {podeEditar ? (
-          <Pressable
-            style={({ pressed }) => [styles.botaoRemover, pressed && styles.itemPressionado]}
-            onPress={aoRemover}
-            hitSlop={8}
-            accessibilityRole="button"
-            accessibilityLabel={`Remover ${item.descricao}`}
-          >
-            <Ionicons name="trash-outline" size={20} color={cores.grafite} />
-          </Pressable>
-        ) : null}
-      </View>
-
-      <View style={styles.colunas}>
-        <View style={styles.coluna}>
-          <Text style={styles.rotulo}>Quantidade</Text>
-          <Text style={styles.colunaValor}>
-            {quantidade(item.quantidade_planejada, item.unidade)}
-          </Text>
-        </View>
-        <View style={styles.coluna}>
-          <Text style={styles.rotulo}>Unitário</Text>
-          <Text style={styles.colunaValor}>{moeda(item.preco_medio)}</Text>
-        </View>
-        <View style={[styles.coluna, styles.colunaDireita]}>
-          <Text style={styles.rotulo}>Total</Text>
-          <Text style={[styles.colunaValor, styles.colunaTotal]}>
-            {moeda(item.custo_previsto)}
-          </Text>
-        </View>
-      </View>
-    </Pressable>
-  );
-}
-
 export default function Insumos({ navigation }) {
-  const db = useSQLiteContext();
   const { temPermissao } = useAuth();
   const { obraAtiva, recarregarObras } = useObraAtiva();
-  const { carregando, erro, resumo, materiais, recarregar } = useOrcamentoObra(obraAtiva?.id);
+  const { carregando, erro, resumo, insumos, offline, atualizadoEm, recarregar } =
+    useOrcamentoObra(obraAtiva?.id);
   const podeEditar = temPermissao('orcamentos:editar');
 
   // Recarrega ao voltar da tela de adicionar.
@@ -122,31 +70,14 @@ export default function Insumos({ navigation }) {
   );
 
   function adicionar() {
-    navigation.navigate('InsumoNovo');
+    navigation.navigate('InsumoNovo', { obraId: obraAtiva.id, nomeObra: obraAtiva.nome });
   }
 
-  function confirmarRemocao(item) {
-    const emServicos =
-      item.qtd_servicos > 1 ? ` Ele será retirado dos ${item.qtd_servicos} serviços em que aparece.` : '';
-    Alert.alert(
-      'Remover insumo',
-      `Remover "${item.descricao}" do orçamento de ${obraAtiva.nome}?${emServicos}`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Remover',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await removerInsumo(db, resumo.id, item.id);
-              await Promise.all([recarregar(), recarregarObras()]);
-            } catch (e) {
-              Alert.alert('Não foi possível remover', e.message);
-            }
-          },
-        },
-      ]
-    );
+  function remover(item) {
+    confirmarRemocao(item, obraAtiva.nome, async () => {
+      await removerInsumo(obraAtiva.id, item.id);
+      await Promise.all([recarregar(), recarregarObras()]);
+    });
   }
 
   const painel = (
@@ -157,7 +88,10 @@ export default function Insumos({ navigation }) {
       indicadores={
         resumo
           ? [
-              { rotulo: materiais.length === 1 ? 'insumo' : 'insumos', valor: String(materiais.length) },
+              {
+                rotulo: resumo.qtd_insumos === 1 ? 'insumo' : 'insumos',
+                valor: String(resumo.qtd_insumos),
+              },
               { rotulo: 'valor total', valor: moeda(resumo.custo_material) },
             ]
           : undefined
@@ -175,7 +109,7 @@ export default function Insumos({ navigation }) {
             Escolha uma obra na aba Obras e toque em "Tornar ativa" para ver os insumos dela.
           </Text>
           <Pressable
-            style={({ pressed }) => [styles.botaoContorno, pressed && styles.itemPressionado]}
+            style={({ pressed }) => [styles.botaoContorno, pressed && styles.botaoPressionado]}
             onPress={() => navigation.navigate('Obras', { screen: 'ObrasLista' })}
             accessibilityRole="button"
           >
@@ -199,13 +133,14 @@ export default function Insumos({ navigation }) {
     <FlatList
       style={styles.tela}
       contentContainerStyle={styles.conteudo}
-      data={resumo ? materiais : []}
+      data={resumo ? insumos : []}
       keyExtractor={(item) => item.id}
       refreshing={false}
       onRefresh={recarregar}
       ListHeaderComponent={
         <View style={styles.cabecalho}>
           {painel}
+          <AvisoOffline offline={offline} atualizadoEm={atualizadoEm} />
 
           {erro ? (
             <Text style={styles.nota}>
@@ -213,7 +148,7 @@ export default function Insumos({ navigation }) {
             </Text>
           ) : null}
 
-          {resumo ? <Resumo resumo={resumo} materiais={materiais} /> : null}
+          {resumo ? <Resumo resumo={resumo} insumos={insumos} /> : null}
 
           {resumo ? (
             <View style={styles.listaTopo}>
@@ -224,7 +159,9 @@ export default function Insumos({ navigation }) {
                 <Pressable
                   style={({ pressed }) => [styles.botaoAdicionar, pressed && styles.botaoPressionado]}
                   onPress={adicionar}
+                  disabled={offline}
                   accessibilityRole="button"
+                  accessibilityState={{ disabled: offline }}
                 >
                   <Ionicons name="add" size={18} color={cores.branco} />
                   <Text style={styles.botaoAdicionarTexto}>Adicionar</Text>
@@ -235,18 +172,13 @@ export default function Insumos({ navigation }) {
         </View>
       }
       ListEmptyComponent={
-        <Text style={styles.vazio}>
-          {resumo
-            ? 'Nenhum insumo no orçamento.'
-            : 'Esta obra ainda não tem orçamento cadastrado.'}
-        </Text>
+        resumo ? <Text style={styles.vazio}>Nenhum insumo nesta obra.</Text> : null
       }
       renderItem={({ item }) => (
         <ItemInsumo
           item={item}
-          podeEditar={podeEditar}
           aoAbrir={() => navigation.navigate('InsumoDetalhe', { descricao: item.descricao })}
-          aoRemover={() => confirmarRemocao(item)}
+          aoRemover={podeEditar && !offline ? () => remover(item) : undefined}
         />
       )}
     />

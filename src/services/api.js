@@ -6,12 +6,16 @@
 //   sessao uma vez com o token de renovacao e repete a requisicao.
 // - So o token de renovacao e guardado no aparelho (SecureStore, criptografado).
 //   O de acesso fica apenas em memoria.
+// - O ultimo usuario logado tambem fica salvo: ao abrir o app sem internet, a
+//   sessao continua (com `offline: true`) e as telas mostram a copia local dos
+//   dados. Quando a conexao volta, a primeira requisicao renova o token.
 
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import * as SecureStore from 'expo-secure-store';
 
 const CHAVE_RENOVACAO = 'token_renovacao';
+const CHAVE_USUARIO = 'usuario_salvo';
 const TEMPO_LIMITE_MS = 10000;
 
 // Ordem: variavel EXPO_PUBLIC_API_URL > IP do computador que roda o Expo
@@ -32,22 +36,33 @@ export class ErroApi extends Error {
   }
 }
 
-// --- Armazenamento do token de renovacao -----------------------------------
-// SecureStore nao existe na web; la o token fica so em memoria.
-let renovacaoEmMemoria = null;
+// --- Armazenamento no aparelho ----------------------------------------------
+// SecureStore nao existe na web; la tudo fica so em memoria.
+const memoria = {};
 
-async function lerRenovacao() {
-  if (Platform.OS === 'web') return renovacaoEmMemoria;
-  return SecureStore.getItemAsync(CHAVE_RENOVACAO);
+async function ler(chave) {
+  if (Platform.OS === 'web') return memoria[chave] ?? null;
+  return SecureStore.getItemAsync(chave);
 }
 
-async function gravarRenovacao(token) {
+async function gravar(chave, valor) {
   if (Platform.OS === 'web') {
-    renovacaoEmMemoria = token;
-  } else if (token) {
-    await SecureStore.setItemAsync(CHAVE_RENOVACAO, token);
+    memoria[chave] = valor;
+  } else if (valor) {
+    await SecureStore.setItemAsync(chave, valor);
   } else {
-    await SecureStore.deleteItemAsync(CHAVE_RENOVACAO);
+    await SecureStore.deleteItemAsync(chave);
+  }
+}
+
+const lerRenovacao = () => ler(CHAVE_RENOVACAO);
+const gravarRenovacao = (token) => gravar(CHAVE_RENOVACAO, token);
+
+async function lerUsuarioSalvo() {
+  try {
+    return JSON.parse(await ler(CHAVE_USUARIO));
+  } catch {
+    return null;
   }
 }
 
@@ -64,12 +79,14 @@ export function definirAoExpirarSessao(callback) {
 async function guardarTokens(resposta) {
   tokenAcesso = resposta.token_acesso;
   await gravarRenovacao(resposta.token_renovacao);
+  await gravar(CHAVE_USUARIO, JSON.stringify(resposta.usuario));
   return resposta.usuario;
 }
 
 async function limparTokens() {
   tokenAcesso = null;
   await gravarRenovacao(null);
+  await gravar(CHAVE_USUARIO, null);
 }
 
 // --- Requisicao base -------------------------------------------------------
@@ -158,9 +175,16 @@ export async function login(email, senha) {
 }
 
 // Usado ao abrir o app: se houver sessao salva, renova e devolve o usuario.
+// Sem conexao, devolve o ultimo usuario salvo com `offline: true`.
 export async function restaurarSessao() {
   if (!(await lerRenovacao())) return null;
-  return renovarSessao();
+  try {
+    return await renovarSessao();
+  } catch (e) {
+    const salvo = e.status === 0 ? await lerUsuarioSalvo() : null;
+    if (!salvo) throw e;
+    return { ...salvo, offline: true };
+  }
 }
 
 export async function logout() {

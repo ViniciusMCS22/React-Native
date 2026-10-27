@@ -43,5 +43,7 @@ yarn-error.*
 # API (Python)
 api/.venv/
 api/*.db
+# Planilhas mensais do SINAPI (dado publico, grande; baixar de novo na Caixa)
+api/sinapi/
 __pycache__/
 .pytest_cache/

@@ -25,3 +25,13 @@ RENOVACAO_DIAS = int(os.getenv("RENOVACAO_DIAS", "7"))
 # RNF20: bloqueio temporario apos tentativas seguidas de login com erro.
 MAX_TENTATIVAS_LOGIN = 5
 BLOQUEIO_MINUTOS = 15
+
+# Regime da tabela SINAPI usado nas obras novas: "desonerado" ou
+# "nao_desonerado" (decisao da empresa). Se a API nao tiver tabela desse
+# regime para a UF, usa a que tiver (ver orcamento.regime_para_nova_obra).
+SINAPI_REGIME_PADRAO = os.getenv("SINAPI_REGIME_PADRAO", "desonerado")
+
+# Apagar obra pede a senha do usuario. So em desenvolvimento, e para agilizar
+# os testes, a senha em branco tambem e aceita. Em producao (ou com
+# EXCLUSAO_SEM_SENHA=0) a senha certa e sempre obrigatoria.
+EXCLUSAO_SEM_SENHA = AMBIENTE == "desenvolvimento" and os.getenv("EXCLUSAO_SEM_SENHA", "1") == "1"

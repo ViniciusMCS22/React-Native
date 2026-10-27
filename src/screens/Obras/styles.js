@@ -1,6 +1,6 @@
 // src/screens/Obras/styles.js
 import { StyleSheet } from 'react-native';
-import { cores } from '../../theme/cores';
+import { cores, marca } from '../../theme/cores';
 import { espacos, raios } from '../../theme/medidas';
 
 export const styles = StyleSheet.create({
@@ -99,5 +99,22 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: cores.grafite,
+  },
+  botaoNova: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: espacos.xs,
+    minHeight: 48,
+    borderRadius: raios.md,
+    backgroundColor: marca.marinho,
+  },
+  botaoNovaPressionado: {
+    opacity: 0.8,
+  },
+  botaoNovaTexto: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: cores.branco,
   },
 });

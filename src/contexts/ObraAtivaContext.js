@@ -6,33 +6,49 @@
 // no detalhe da obra). A escolha fica salva nas preferencias (SQLite), entao
 // continua valendo ao reabrir o app. O Inicio mostra os dados dela.
 //
-// Precisa estar dentro do <SQLiteProvider> e do <PreferenciasProvider> (ver App.js).
+// A lista vem da API. Sem internet, vem a ultima copia salva (`offline` e
+// `atualizadoEm` dizem de quando ela e).
+//
+// Precisa estar dentro do <SQLiteProvider>, do <AuthProvider> e do
+// <PreferenciasProvider> (ver App.js).
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useSQLiteContext } from 'expo-sqlite';
 import { listarObras } from '../repositories/obrasRepositorio';
+import { useAuth } from './AuthContext';
 import { usePreferencias } from './PreferenciasContext';
 
 const ObraAtivaContext = createContext(null);
 
 export function ObraAtivaProvider({ children }) {
   const db = useSQLiteContext();
+  const { usuario } = useAuth();
+  const usuarioId = usuario?.id ?? null;
   const { preferencias, carregando: carregandoPreferencias, definirPreferencia } =
     usePreferencias();
   const [obras, setObras] = useState([]);
+  const [origem, setOrigem] = useState({ offline: false, atualizadoEm: null });
   const [carregandoObras, setCarregandoObras] = useState(true);
   const [erro, setErro] = useState(null);
 
   const recarregarObras = useCallback(async () => {
+    // Sem login nao ha o que buscar (a API exige token).
+    if (!usuarioId) {
+      setObras([]);
+      setCarregandoObras(false);
+      return;
+    }
     try {
       setErro(null);
-      setObras(await listarObras(db));
+      const { obras: lista, offline, atualizadoEm } = await listarObras(db, usuarioId);
+      setObras(lista);
+      setOrigem({ offline, atualizadoEm });
     } catch (e) {
       setErro(e);
     } finally {
       setCarregandoObras(false);
     }
-  }, [db]);
+  }, [db, usuarioId]);
 
   useEffect(() => {
     recarregarObras();
@@ -52,6 +68,8 @@ export function ObraAtivaProvider({ children }) {
       obraAtivaId: obraAtiva?.id ?? null,
       carregando: carregandoObras || carregandoPreferencias,
       erro,
+      offline: origem.offline,
+      atualizadoEm: origem.atualizadoEm,
       selecionarObra,
       recarregarObras,
     };
@@ -61,6 +79,7 @@ export function ObraAtivaProvider({ children }) {
     carregandoObras,
     carregandoPreferencias,
     erro,
+    origem,
     selecionarObra,
     recarregarObras,
   ]);

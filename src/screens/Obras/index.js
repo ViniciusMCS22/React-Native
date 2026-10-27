@@ -1,15 +1,28 @@
 // src/screens/Obras/index.js
 import { View, Text, FlatList, Pressable, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useAuth } from '../../contexts/AuthContext';
 import { useObraAtiva } from '../../contexts/ObraAtivaContext';
+import AvisoOffline from '../../components/AvisoOffline';
 import { moeda } from '../../utils/formatacao';
 import PainelMarca from '../../components/PainelMarca';
 import { cores } from '../../theme/cores';
 import { styles } from './styles';
 
 export default function Obras({ navigation }) {
-  const { obras, obraAtiva, obraAtivaId, selecionarObra, carregando, erro, recarregarObras } =
-    useObraAtiva();
+  const { temPermissao } = useAuth();
+  const {
+    obras,
+    obraAtiva,
+    obraAtivaId,
+    selecionarObra,
+    carregando,
+    erro,
+    offline,
+    atualizadoEm,
+    recarregarObras,
+  } = useObraAtiva();
+  const podeCriar = temPermissao('orcamentos:editar');
   const totalPrevisto = obras.reduce((soma, o) => soma + (o.material_previsto ?? 0), 0);
 
   function abrirObra(obra) {
@@ -43,6 +56,17 @@ export default function Obras({ navigation }) {
               { rotulo: 'material previsto', valor: moeda(totalPrevisto) },
             ]}
           />
+          <AvisoOffline offline={offline} atualizadoEm={atualizadoEm} />
+          {podeCriar ? (
+            <Pressable
+              style={({ pressed }) => [styles.botaoNova, pressed && styles.botaoNovaPressionado]}
+              onPress={() => navigation.navigate('NovaObra')}
+              accessibilityRole="button"
+            >
+              <Ionicons name="add" size={20} color={cores.branco} />
+              <Text style={styles.botaoNovaTexto}>Nova obra</Text>
+            </Pressable>
+          ) : null}
           <Text style={styles.introducao}>
             {erro
               ? `Não foi possível ler as obras: ${String(erro.message ?? erro)}`
@@ -77,8 +101,8 @@ export default function Obras({ navigation }) {
               ) : null}
             </View>
 
-            <Text style={styles.linha}>{item.local}</Text>
-            <Text style={styles.linha}>Contrato {item.contrato}</Text>
+            {item.local ? <Text style={styles.linha}>{item.local}</Text> : null}
+            {item.contrato ? <Text style={styles.linha}>Contrato {item.contrato}</Text> : null}
             <Text style={styles.linha}>{item.situacao}</Text>
             <Text style={styles.valor}>
               Material previsto: {moeda(item.material_previsto)}

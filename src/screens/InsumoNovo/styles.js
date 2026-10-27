@@ -144,6 +144,11 @@ export const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: espacos.sm,
   },
+  precoUnitario: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: cores.texto,
+  },
   total: {
     fontSize: 20,
     fontWeight: '700',
@@ -164,5 +169,30 @@ export const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '600',
     color: cores.branco,
+  },
+  secaoTitulo: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: marca.marinho,
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    paddingLeft: espacos.sm,
+    borderLeftWidth: 3,
+    borderLeftColor: marca.marinho,
+  },
+  somar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: espacos.xxs,
+    minHeight: 36,
+    paddingHorizontal: espacos.md,
+    borderRadius: raios.md,
+    borderWidth: 1,
+    borderColor: cores.grafite,
+  },
+  somarTexto: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: cores.grafite,
   },
 });

@@ -54,3 +54,12 @@ export function percentualComSinal(fracao, casas = 2) {
   const sinal = f > 0 ? '+' : f < 0 ? '-' : '';
   return `${sinal}${numero(Math.abs(f) * 100, casas)}%`;
 }
+
+// Numero digitado pelo usuario: '1.234,5' ou '1234.5' -> 1234.5.
+// Vazio ou invalido -> NaN.
+export function lerNumero(texto) {
+  const limpo = (texto ?? '').trim();
+  if (!limpo) return NaN;
+  const normalizado = limpo.includes(',') ? limpo.replace(/\./g, '').replace(',', '.') : limpo;
+  return Number(normalizado);
+}

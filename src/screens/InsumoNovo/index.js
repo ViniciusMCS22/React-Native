@@ -1,15 +1,20 @@
 // src/screens/InsumoNovo/index.js
-// Adiciona um insumo do catalogo SINAPI ao orcamento da obra ativa.
-// Dois passos na mesma tela: escolher o insumo e informar quantidade/preco.
-// So abre pela aba Insumos para quem tem 'orcamentos:editar'; a checagem
-// aqui repete a regra caso alguem chegue por outro caminho.
+// Adiciona material a uma obra (parametro `obraId`; sem ele, a obra ativa).
+//
+//   - Campo de busca: digita do jeito que quiser e a API devolve os materiais
+//     do SINAPI mais parecidos (erro de digitacao, sem acento, ordem livre).
+//   - Embaixo, os insumos que a obra ja tem: tocar soma mais quantidade.
+//   - Escolhido o material, informa so a quantidade. O preco nao e digitado:
+//     a API usa o preco SINAPI mais recente (UF e regime da obra).
+//
+// So para 'orcamentos:editar' e com internet (a busca e feita na API).
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
   TextInput,
-  FlatList,
+  SectionList,
   ScrollView,
   Pressable,
   ActivityIndicator,
@@ -17,102 +22,110 @@ import {
   Platform,
   Alert,
 } from 'react-native';
-import { useSQLiteContext } from 'expo-sqlite';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import { useObraAtiva } from '../../contexts/ObraAtivaContext';
-import { buscarResumoOrcamento } from '../../repositories/obrasRepositorio';
-import { adicionarInsumo, listarCatalogoSinapi } from '../../repositories/insumosRepositorio';
+import { useOrcamentoObra } from '../../hooks/useOrcamentoObra';
+import { adicionarInsumo, buscarSinapi } from '../../repositories/obrasRepositorio';
+import AvisoOffline from '../../components/AvisoOffline';
 import PainelMarca from '../../components/PainelMarca';
-import { moeda, numero, mesReferencia } from '../../utils/formatacao';
+import { lerNumero, moeda, mesReferencia, quantidade } from '../../utils/formatacao';
 import { cores } from '../../theme/cores';
 import { styles } from './styles';
 
-// '1.234,5' ou '1234.5' -> 1234.5. Vazio ou invalido -> NaN.
-function lerNumero(texto) {
-  const limpo = texto.trim();
-  if (!limpo) return NaN;
-  const normalizado = limpo.includes(',') ? limpo.replace(/\./g, '').replace(',', '.') : limpo;
-  return Number(normalizado);
-}
+// Espera o usuario parar de digitar antes de buscar.
+const ESPERA_BUSCA_MS = 350;
+const MINIMO_LETRAS = 2;
 
-// Sem acento e minusculo, para a busca achar "aco" em "Aço".
-function normalizar(texto) {
-  return texto.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
-}
-
-export default function InsumoNovo({ navigation }) {
-  const db = useSQLiteContext();
-  const { temPermissao } = useAuth();
-  const { obraAtiva, recarregarObras } = useObraAtiva();
-  const podeEditar = temPermissao('orcamentos:editar');
-
-  const [orcamento, setOrcamento] = useState(null);
-  const [catalogo, setCatalogo] = useState([]);
-  const [carregando, setCarregando] = useState(true);
-  const [erro, setErro] = useState(null);
-
-  const [busca, setBusca] = useState('');
-  const [escolhido, setEscolhido] = useState(null);
-  const [qtdTexto, setQtdTexto] = useState('');
-  const [precoTexto, setPrecoTexto] = useState('');
-  const [salvando, setSalvando] = useState(false);
+function useBuscaSinapi(uf, regime, texto) {
+  const [estado, setEstado] = useState({ resultados: [], buscando: false, erro: null });
+  const ultima = useRef(0);
 
   useEffect(() => {
-    let ativo = true;
-    (async () => {
+    const termo = texto.trim();
+    if (!uf || !regime || termo.length < MINIMO_LETRAS) {
+      setEstado({ resultados: [], buscando: false, erro: null });
+      return undefined;
+    }
+    setEstado((e) => ({ ...e, buscando: true, erro: null }));
+    const numero = ++ultima.current;
+    const espera = setTimeout(async () => {
       try {
-        const orc = obraAtiva ? await buscarResumoOrcamento(db, obraAtiva.id) : null;
-        const lista = orc ? await listarCatalogoSinapi(db, orc.sinapi_uf ?? 'MA', orc.id) : [];
-        if (!ativo) return;
-        setOrcamento(orc);
-        setCatalogo(lista);
-      } catch (e) {
-        if (ativo) setErro(e);
-      } finally {
-        if (ativo) setCarregando(false);
+        const resultados = await buscarSinapi({ uf, regime, texto: termo });
+        // Descarta respostas atrasadas de buscas anteriores.
+        if (numero === ultima.current) setEstado({ resultados, buscando: false, erro: null });
+      } catch (erro) {
+        if (numero === ultima.current) setEstado({ resultados: [], buscando: false, erro });
       }
-    })();
-    return () => {
-      ativo = false;
-    };
-  }, [db, obraAtiva]);
+    }, ESPERA_BUSCA_MS);
+    return () => clearTimeout(espera);
+  }, [uf, regime, texto]);
 
-  const filtrados = useMemo(() => {
-    const termo = normalizar(busca.trim());
-    if (!termo) return catalogo;
-    return catalogo.filter(
-      (c) =>
-        normalizar(c.descricao).includes(termo) ||
-        normalizar(c.codigo).includes(termo) ||
-        normalizar(c.classe ?? '').includes(termo)
-    );
-  }, [catalogo, busca]);
+  return estado;
+}
 
-  function escolher(item) {
-    setEscolhido(item);
-    setQtdTexto('');
-    setPrecoTexto(numero(item.preco, 2));
-  }
+function LinhaMaterial({ titulo, meta, direita, selo, aoPressionar, rotuloAcessivel }) {
+  return (
+    <Pressable
+      style={({ pressed }) => [styles.item, pressed && styles.itemPressionado]}
+      onPress={aoPressionar}
+      accessibilityRole="button"
+      accessibilityLabel={rotuloAcessivel}
+    >
+      <View style={styles.itemTextos}>
+        <Text style={styles.itemNome}>{titulo}</Text>
+        <Text style={styles.itemMeta}>{meta}</Text>
+        {selo ? (
+          <View style={styles.selo}>
+            <Ionicons name="checkmark" size={12} color={cores.grafite} />
+            <Text style={styles.seloTexto}>{selo}</Text>
+          </View>
+        ) : null}
+      </View>
+      <View style={styles.itemPreco}>{direita}</View>
+    </Pressable>
+  );
+}
 
+export default function InsumoNovo({ route, navigation }) {
+  const { temPermissao } = useAuth();
+  const { obraAtiva, recarregarObras } = useObraAtiva();
+  const obraId = route.params?.obraId ?? obraAtiva?.id;
+  const podeEditar = temPermissao('orcamentos:editar');
+  const { obra, insumos, carregando, erro: erroObra, offline, atualizadoEm, recarregar } =
+    useOrcamentoObra(obraId);
+
+  const [texto, setTexto] = useState('');
+  const { resultados, buscando, erro: erroBusca } = useBuscaSinapi(
+    obra?.sinapi_uf,
+    obra?.sinapi_regime,
+    texto
+  );
+  // { codigo, descricao, unidade, preco?, mes_referencia?, naObra? }
+  const [escolhido, setEscolhido] = useState(null);
+  const [qtdTexto, setQtdTexto] = useState('');
+  const [salvando, setSalvando] = useState(false);
+
+  const naObra = new Map(insumos.map((i) => [i.codigo, i]));
   const qtd = lerNumero(qtdTexto);
-  const preco = lerNumero(precoTexto);
-  const total = qtd > 0 && preco >= 0 ? qtd * preco : null;
+
+  function escolher(material) {
+    setEscolhido(material);
+    setQtdTexto('');
+  }
 
   async function salvar() {
     if (!(qtd > 0)) {
       Alert.alert('Quantidade inválida', 'Informe uma quantidade maior que zero.');
       return;
     }
-    if (!(preco >= 0)) {
-      Alert.alert('Preço inválido', 'Informe o preço unitário, como 38,50.');
-      return;
-    }
     setSalvando(true);
     try {
-      await adicionarInsumo(db, orcamento, escolhido, qtd, preco);
-      await recarregarObras();
-      navigation.goBack();
+      await adicionarInsumo(obraId, escolhido.codigo, qtd);
+      await Promise.all([recarregar(), recarregarObras()]);
+      setSalvando(false);
+      setEscolhido(null);
+      setTexto('');
     } catch (e) {
       setSalvando(false);
       Alert.alert('Não foi possível adicionar', e.message);
@@ -122,27 +135,28 @@ export default function InsumoNovo({ navigation }) {
   const painel = (
     <PainelMarca
       compacto
-      sobretitulo={obraAtiva ? obraAtiva.nome : 'Nenhuma obra ativa'}
+      sobretitulo={obra?.nome ?? route.params?.nomeObra ?? 'Nenhuma obra'}
       titulo="Adicionar insumo"
       descricao={
-        orcamento
-          ? `Catálogo SINAPI-${orcamento.sinapi_uf ?? 'MA'}, com o preço mais recente de cada material.`
+        obra
+          ? `Busca na tabela SINAPI-${obra.sinapi_uf}. O preço vem do SINAPI, você informa só a quantidade.`
           : undefined
       }
     />
   );
 
-  if (!podeEditar || !obraAtiva || erro || (!carregando && !orcamento)) {
+  if (!podeEditar || !obraId || erroObra || offline) {
     const motivo = !podeEditar
       ? 'Seu perfil não pode alterar os insumos do orçamento.'
-      : !obraAtiva
-      ? 'Escolha uma obra ativa antes de adicionar insumos.'
-      : erro
-      ? `Não foi possível ler o catálogo: ${String(erro.message ?? erro)}`
-      : 'Esta obra ainda não tem orçamento cadastrado.';
+      : !obraId
+      ? 'Escolha uma obra antes de adicionar insumos.'
+      : offline
+      ? 'Adicionar insumos precisa de internet: a busca e o preço vêm da tabela SINAPI na API.'
+      : `Não foi possível ler a obra: ${String(erroObra.message ?? erroObra)}`;
     return (
       <View style={[styles.tela, styles.conteudo]}>
         {painel}
+        <AvisoOffline offline={offline} atualizadoEm={atualizadoEm} />
         <Text style={styles.nota}>{motivo}</Text>
       </View>
     );
@@ -156,8 +170,11 @@ export default function InsumoNovo({ navigation }) {
     );
   }
 
-  // Passo 2: quantidade e preco do insumo escolhido.
+  // Passo 2: quantidade do material escolhido.
   if (escolhido) {
+    const existente = naObra.get(escolhido.codigo);
+    const preco = escolhido.preco;
+    const total = qtd > 0 && preco !== undefined ? qtd * preco : null;
     return (
       <KeyboardAvoidingView
         style={styles.tela}
@@ -171,8 +188,7 @@ export default function InsumoNovo({ navigation }) {
               <View style={styles.itemTextos}>
                 <Text style={styles.itemNome}>{escolhido.descricao}</Text>
                 <Text style={styles.itemMeta}>
-                  {escolhido.codigo} - {escolhido.classe ?? 'Sem categoria'} - unidade{' '}
-                  {escolhido.unidade}
+                  Código {escolhido.codigo} - unidade {escolhido.unidade}
                 </Text>
               </View>
               <Pressable
@@ -184,15 +200,18 @@ export default function InsumoNovo({ navigation }) {
                 <Text style={styles.link}>Trocar</Text>
               </Pressable>
             </View>
-            {escolhido.naObra ? (
+            {existente ? (
               <Text style={styles.nota}>
-                Este insumo já está no orçamento. A quantidade informada será somada.
+                A obra já tem {quantidade(existente.quantidade, existente.unidade)}. A quantidade
+                informada será somada.
               </Text>
             ) : null}
           </View>
 
           <View style={styles.campoForm}>
-            <Text style={styles.rotuloForm}>Quantidade ({escolhido.unidade})</Text>
+            <Text style={styles.rotuloForm}>
+              Quantidade {existente ? 'a somar ' : ''}({escolhido.unidade})
+            </Text>
             <TextInput
               style={styles.entrada}
               value={qtdTexto}
@@ -206,27 +225,30 @@ export default function InsumoNovo({ navigation }) {
             />
           </View>
 
-          <View style={styles.campoForm}>
-            <Text style={styles.rotuloForm}>Preço unitário (R$)</Text>
-            <TextInput
-              style={styles.entrada}
-              value={precoTexto}
-              onChangeText={setPrecoTexto}
-              placeholder="Ex.: 38,50"
-              placeholderTextColor={cores.textoFraco}
-              keyboardType="decimal-pad"
-              editable={!salvando}
-              accessibilityLabel="Preço unitário em reais"
-            />
-            <Text style={styles.nota}>
-              Sugerido: SINAPI {mesReferencia(escolhido.mes_referencia)}, {moeda(escolhido.preco)}{' '}
-              por {escolhido.unidade}.
-            </Text>
-          </View>
-
-          <View style={styles.totalLinha}>
-            <Text style={styles.rotuloForm}>Total</Text>
-            <Text style={styles.total}>{total === null ? '-' : moeda(total)}</Text>
+          <View style={styles.cartao}>
+            {preco !== undefined ? (
+              <>
+                <View style={styles.totalLinha}>
+                  <Text style={styles.rotuloForm}>Preço unitário</Text>
+                  <Text style={styles.precoUnitario}>
+                    {moeda(preco)} / {escolhido.unidade}
+                  </Text>
+                </View>
+                <Text style={styles.nota}>
+                  SINAPI-{obra.sinapi_uf} {mesReferencia(escolhido.mes_referencia)}. Fica guardado
+                  na obra como base para a depreciação.
+                </Text>
+                <View style={styles.totalLinha}>
+                  <Text style={styles.rotuloForm}>Total</Text>
+                  <Text style={styles.total}>{total === null ? '-' : moeda(total)}</Text>
+                </View>
+              </>
+            ) : (
+              <Text style={styles.nota}>
+                Preço na obra: {moeda(existente.preco_unitario)} / {existente.unidade}. A
+                quantidade nova usa o preço SINAPI mais recente, e a obra guarda a média.
+              </Text>
+            )}
           </View>
 
           <Pressable
@@ -239,7 +261,9 @@ export default function InsumoNovo({ navigation }) {
             {salvando ? (
               <ActivityIndicator color={cores.branco} />
             ) : (
-              <Text style={styles.botaoTexto}>Adicionar ao orçamento</Text>
+              <Text style={styles.botaoTexto}>
+                {existente ? 'Somar à obra' : 'Adicionar à obra'}
+              </Text>
             )}
           </Pressable>
         </ScrollView>
@@ -247,14 +271,22 @@ export default function InsumoNovo({ navigation }) {
     );
   }
 
-  // Passo 1: escolher no catalogo.
+  // Passo 1: buscar no SINAPI ou somar a um insumo que a obra ja tem.
+  const termo = texto.trim();
+  const secoes = [];
+  if (termo.length >= MINIMO_LETRAS) {
+    secoes.push({ chave: 'sinapi', titulo: 'Resultados do SINAPI', data: resultados });
+  }
+  secoes.push({ chave: 'obra', titulo: `Já nesta obra (${insumos.length})`, data: insumos });
+
   return (
-    <FlatList
+    <SectionList
       style={styles.tela}
       contentContainerStyle={styles.conteudo}
-      data={filtrados}
-      keyExtractor={(item) => item.codigo}
+      sections={secoes}
+      keyExtractor={(item, i) => `${item.codigo}-${i}`}
       keyboardShouldPersistTaps="handled"
+      stickySectionHeadersEnabled={false}
       ListHeaderComponent={
         <View style={styles.cabecalho}>
           {painel}
@@ -262,44 +294,82 @@ export default function InsumoNovo({ navigation }) {
             <Ionicons name="search" size={18} color={cores.textoFraco} />
             <TextInput
               style={styles.buscaEntrada}
-              value={busca}
-              onChangeText={setBusca}
-              placeholder="Buscar por nome, código ou categoria"
+              value={texto}
+              onChangeText={setTexto}
+              placeholder="Buscar material no SINAPI (ex.: cimento cp2)"
               placeholderTextColor={cores.textoFraco}
               autoCorrect={false}
-              accessibilityLabel="Buscar insumo"
+              returnKeyType="search"
+              accessibilityLabel="Buscar material no SINAPI"
             />
-          </View>
-        </View>
-      }
-      ListEmptyComponent={<Text style={styles.vazio}>Nenhum insumo encontrado.</Text>}
-      renderItem={({ item }) => (
-        <Pressable
-          style={({ pressed }) => [styles.item, pressed && styles.itemPressionado]}
-          onPress={() => escolher(item)}
-          accessibilityRole="button"
-          accessibilityLabel={`${item.descricao}, ${moeda(item.preco)} por ${item.unidade}${
-            item.naObra ? ', já está na obra' : ''
-          }`}
-        >
-          <View style={styles.itemTextos}>
-            <Text style={styles.itemNome}>{item.descricao}</Text>
-            <Text style={styles.itemMeta}>
-              {item.codigo} - {item.classe ?? 'Sem categoria'}
-            </Text>
-            {item.naObra ? (
-              <View style={styles.selo}>
-                <Ionicons name="checkmark" size={12} color={cores.grafite} />
-                <Text style={styles.seloTexto}>Já na obra</Text>
-              </View>
+            {buscando ? <ActivityIndicator size="small" color={cores.grafite} /> : null}
+            {texto && !buscando ? (
+              <Pressable
+                onPress={() => setTexto('')}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel="Limpar busca"
+              >
+                <Ionicons name="close-circle" size={18} color={cores.textoFraco} />
+              </Pressable>
             ) : null}
           </View>
-          <View style={styles.itemPreco}>
-            <Text style={styles.itemPrecoValor}>{moeda(item.preco)}</Text>
-            <Text style={styles.itemMeta}>por {item.unidade}</Text>
-          </View>
-        </Pressable>
+          {termo.length > 0 && termo.length < MINIMO_LETRAS ? (
+            <Text style={styles.nota}>Digite ao menos {MINIMO_LETRAS} letras.</Text>
+          ) : null}
+        </View>
+      }
+      renderSectionHeader={({ section }) => (
+        <Text style={styles.secaoTitulo} accessibilityRole="header">
+          {section.titulo}
+        </Text>
       )}
+      renderSectionFooter={({ section }) => {
+        if (section.data.length > 0) return null;
+        if (section.chave === 'obra') {
+          return <Text style={styles.nota}>A obra ainda não tem insumos.</Text>;
+        }
+        if (buscando) return null;
+        return (
+          <Text style={styles.nota}>
+            {erroBusca
+              ? `Não foi possível buscar: ${erroBusca.message}`
+              : 'Nenhum material parecido no SINAPI. Tente outras palavras, como o nome principal do material.'}
+          </Text>
+        );
+      }}
+      renderItem={({ item, section }) =>
+        section.chave === 'sinapi' ? (
+          <LinhaMaterial
+            titulo={item.descricao}
+            meta={`Código ${item.codigo}`}
+            selo={naObra.has(item.codigo) ? 'Já na obra' : null}
+            aoPressionar={() => escolher(item)}
+            rotuloAcessivel={`${item.descricao}, ${moeda(item.preco)} por ${item.unidade}`}
+            direita={
+              <>
+                <Text style={styles.itemPrecoValor}>{moeda(item.preco)}</Text>
+                <Text style={styles.itemMeta}>por {item.unidade}</Text>
+              </>
+            }
+          />
+        ) : (
+          <LinhaMaterial
+            titulo={item.descricao}
+            meta={`${quantidade(item.quantidade, item.unidade)} - ${moeda(item.custo)}`}
+            aoPressionar={() =>
+              escolher({ codigo: item.codigo, descricao: item.descricao, unidade: item.unidade })
+            }
+            rotuloAcessivel={`Somar quantidade a ${item.descricao}`}
+            direita={
+              <View style={styles.somar}>
+                <Ionicons name="add" size={16} color={cores.grafite} />
+                <Text style={styles.somarTexto}>Somar</Text>
+              </View>
+            }
+          />
+        )
+      }
     />
   );
 }

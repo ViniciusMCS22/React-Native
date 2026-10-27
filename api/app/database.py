@@ -1,5 +1,5 @@
 # api/app/database.py
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 from .config import DATABASE_URL
@@ -22,3 +22,26 @@ def obter_sessao():
         yield sessao
     finally:
         sessao.close()
+
+
+
+# Colunas que entraram depois da primeira versao das tabelas de obra. O
+# create_all nao altera tabela existente, entao bancos de desenvolvimento
+# criados antes recebem a coluna aqui. Os dados que ja existiam eram todos da
+# tabela SINAPI ficticia. (Quando o modelo estabilizar: migracoes com Alembic.)
+_COLUNAS_NOVAS = [
+    ("sinapi_precos", "regime", "VARCHAR(20) NOT NULL DEFAULT 'ficticio'"),
+    ("obras", "sinapi_regime", "VARCHAR(20) NOT NULL DEFAULT 'ficticio'"),
+    ("obras", "excluido_por_id", "VARCHAR(36)"),
+]
+
+
+def atualizar_banco_antigo() -> None:
+    inspetor = inspect(engine)
+    with engine.begin() as conexao:
+        for tabela, coluna, tipo in _COLUNAS_NOVAS:
+            if not inspetor.has_table(tabela):
+                continue
+            existentes = {c["name"] for c in inspetor.get_columns(tabela)}
+            if coluna not in existentes:
+                conexao.execute(text(f"ALTER TABLE {tabela} ADD COLUMN {coluna} {tipo}"))

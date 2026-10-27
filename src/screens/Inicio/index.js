@@ -15,6 +15,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useObraAtiva } from '../../contexts/ObraAtivaContext';
 import { usePreferencias } from '../../contexts/PreferenciasContext';
 import { useOrcamentoObra } from '../../hooks/useOrcamentoObra';
+import AvisoOffline from '../../components/AvisoOffline';
 import BarraVariacao from '../../components/BarraVariacao';
 import SeloVariacao, { textoVariacao } from '../../components/SeloVariacao';
 import PainelMarca from '../../components/PainelMarca';
@@ -107,7 +108,8 @@ export default function Inicio({ navigation }) {
   const { usuario, temPermissao } = useAuth();
   const { obras, obraAtiva, carregando: carregandoObras, recarregarObras } = useObraAtiva();
   const { preferencias } = usePreferencias();
-  const { carregando, erro, resumo, depreciacao, recarregar } = useOrcamentoObra(obraAtiva?.id);
+  const { carregando, erro, resumo, depreciacao, offline, atualizadoEm, recarregar } =
+    useOrcamentoObra(obraAtiva?.id);
 
   // Os insumos podem mudar na aba Insumos; relê ao voltar para o Inicio.
   useFocusEffect(
@@ -194,6 +196,7 @@ export default function Inicio({ navigation }) {
           </LinhaResumo>
         </View>
       </PainelMarca>
+      <AvisoOffline offline={offline} atualizadoEm={atualizadoEm} />
 
       {/* 2. Obra ativa */}
       <Text style={styles.secaoTitulo} accessibilityRole="header">
@@ -263,7 +266,7 @@ export default function Inicio({ navigation }) {
                 <Campo rotulo="Com BDI" valor={moeda(resumo.custo_material_com_bdi)} />
                 <Campo
                   rotulo="Composição"
-                  valor={`${resumo.qtd_servicos} serviços, ${resumo.qtd_materiais} materiais`}
+                  valor={`${resumo.qtd_insumos} insumos, ${resumo.qtd_categorias} categorias`}
                 />
               </View>
             ) : (
@@ -287,14 +290,14 @@ export default function Inicio({ navigation }) {
               <View style={styles.cartao}>
                 {!depreciacao ? (
                   <Text style={styles.nota}>
-                    Esta obra não tem preços SINAPI guardados na criação, então não há base
-                    para calcular a depreciação.
+                    Esta obra ainda não tem insumos, então não há o que comparar com a
+                    tabela SINAPI.
                   </Text>
                 ) : (
                   <>
                     <Text style={styles.nota}>
-                      SINAPI-{depreciacao.uf} {mesReferencia(depreciacao.mesBase)} (criação) comparado
-                      com {mesReferencia(depreciacao.mesAtual)} (atual).
+                      Preços de quando cada insumo entrou na obra, comparados com
+                      SINAPI-{depreciacao.uf} {mesReferencia(depreciacao.mesAtual)}.
                     </Text>
                     <View style={styles.linhaEntre}>
                       <Text

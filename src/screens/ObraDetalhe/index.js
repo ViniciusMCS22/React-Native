@@ -1,13 +1,23 @@
+// src/screens/ObraDetalhe/index.js
+// Detalhe de uma obra (dados da API):
+//   - identificacao, referencia SINAPI e custo de material;
+//   - com 'orcamentos:ver': seletor Insumos / Depreciacao. Na aba Insumos,
+//     quem tem 'orcamentos:editar' adiciona e remove insumos;
+//   - sem 'orcamentos:ver' (cliente): so o resumo da depreciacao, sem itens.
 
-
-import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
-import { View, Text, SectionList, Pressable, ActivityIndicator } from 'react-native';
+import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
+import { View, Text, FlatList, Pressable, ActivityIndicator } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { useOrcamentoObra } from '../../hooks/useOrcamentoObra';
+import { useAuth } from '../../contexts/AuthContext';
 import { useObraAtiva } from '../../contexts/ObraAtivaContext';
+import { useOrcamentoObra } from '../../hooks/useOrcamentoObra';
+import { removerInsumo } from '../../repositories/obrasRepositorio';
+import AvisoOffline from '../../components/AvisoOffline';
 import BarraVariacao from '../../components/BarraVariacao';
-import SeloVariacao, { textoVariacao } from '../../components/SeloVariacao';
+import ItemInsumo, { confirmarRemocao } from '../../components/ItemInsumo';
 import PainelMarca from '../../components/PainelMarca';
+import SeloVariacao, { textoVariacao } from '../../components/SeloVariacao';
 import {
   moeda,
   numero,
@@ -22,8 +32,7 @@ import { cores, variacaoPreco } from '../../theme/cores';
 import { styles } from './styles';
 
 const MODOS = [
-  { chave: 'servico', rotulo: 'Serviços' },
-  { chave: 'material', rotulo: 'Materiais' },
+  { chave: 'insumos', rotulo: 'Insumos' },
   { chave: 'depreciacao', rotulo: 'Depreciação' },
 ];
 
@@ -45,13 +54,21 @@ function Legenda() {
   );
 }
 
+function Campo({ rotulo, valor, destaque }) {
+  return (
+    <View style={styles.campo}>
+      <Text style={styles.rotulo}>{rotulo}</Text>
+      <Text style={[styles.valor, destaque && styles.valorDestaque]}>{valor}</Text>
+    </View>
+  );
+}
+
 function ResumoDepreciacao({ d }) {
   if (!d) {
     return (
       <View style={styles.bloco}>
         <Text style={styles.nota}>
-          Esta obra não tem preços SINAPI guardados na criação, então não há base
-          para calcular a depreciação.
+          Sem insumos na obra, ainda não há o que comparar com a tabela SINAPI.
         </Text>
       </View>
     );
@@ -62,8 +79,8 @@ function ResumoDepreciacao({ d }) {
     <View style={styles.bloco}>
       <Text style={styles.tituloBloco}>Variação do valor da obra</Text>
       <Text style={styles.nota}>
-        Preços guardados na criação: SINAPI-{d.uf} {mesReferencia(d.mesBase)}.
-        Comparado com: SINAPI-{d.uf} {mesReferencia(d.mesAtual)}.
+        Preços de quando cada insumo entrou na obra, comparados com SINAPI-{d.uf}{' '}
+        {mesReferencia(d.mesAtual)}.
       </Text>
 
       <View style={styles.linhaEntre}>
@@ -131,36 +148,36 @@ function ItemDepreciacao({ item, mesAtual }) {
   );
 }
 
-function Campo({ rotulo, valor, destaque }) {
-  return (
-    <View style={styles.campo}>
-      <Text style={styles.rotulo}>{rotulo}</Text>
-      <Text style={[styles.valor, destaque && styles.valorDestaque]}>{valor}</Text>
-    </View>
-  );
-}
-
-function Cabecalho({ obra, resumo, depreciacao, modo, setModo }) {
+function Cabecalho({
+  obra,
+  resumo,
+  depreciacao,
+  offline,
+  atualizadoEm,
+  verItens,
+  podeEditar,
+  modo,
+  setModo,
+  aoAdicionar,
+}) {
   return (
     <View style={styles.cabecalho}>
       <PainelMarca
         compacto
-        sobretitulo={obra.cliente}
+        sobretitulo={obra.cliente || 'Obra'}
         titulo={obra.nome}
-        descricao={`${obra.local} - ${obra.situacao}`}
+        descricao={[obra.local, obra.situacao].filter(Boolean).join(' - ')}
         indicadores={[
-          {
-            rotulo: 'material previsto',
-            valor: resumo ? moeda(resumo.custo_material) : '-',
-          },
+          { rotulo: 'material previsto', valor: moeda(resumo.custo_material) },
           { rotulo: 'término previsto', valor: data(obra.data_termino_prevista) },
         ]}
       />
+      <AvisoOffline offline={offline} atualizadoEm={atualizadoEm} />
 
       <View style={styles.bloco}>
         <Text style={styles.tituloBloco}>Identificação</Text>
-        <Campo rotulo="Cliente" valor={obra.cliente} />
-        <Campo rotulo="Local" valor={obra.local} />
+        <Campo rotulo="Cliente" valor={obra.cliente || '-'} />
+        <Campo rotulo="Local" valor={obra.local || '-'} />
         <Campo rotulo="Contrato" valor={obra.contrato ?? '-'} />
         <Campo rotulo="Responsável" valor={obra.responsavel ?? '-'} />
         <Campo rotulo="Situação" valor={obra.situacao} />
@@ -174,140 +191,90 @@ function Cabecalho({ obra, resumo, depreciacao, modo, setModo }) {
         />
       </View>
 
-      {resumo ? (
-        <>
-          <View style={styles.bloco}>
-            <Text style={styles.tituloBloco}>Referência do orçamento</Text>
-            <Campo rotulo="Orçamento" valor={`${resumo.descricao} (versão ${resumo.versao})`} />
-            <Campo rotulo="Data-base" valor={resumo.data_base} />
-            <Campo rotulo="Fonte de preços" valor={resumo.fonte_precos} />
-            {resumo.sinapi_mes_referencia ? (
-              <Campo
-                rotulo="Preços guardados na criação"
-                valor={`SINAPI-${resumo.sinapi_uf} ${mesReferencia(resumo.sinapi_mes_referencia)}`}
-              />
-            ) : null}
-            <Campo rotulo="BDI" valor={percentual(resumo.bdi_percentual / 100, 2)} />
-          </View>
-
-          <View style={styles.bloco}>
-            <Text style={styles.tituloBloco}>Custo de material</Text>
-            <Text style={styles.nota}>
-              Este projeto acompanha apenas insumos de material. Mão de obra,
-              equipamentos e encargos não entram nestes valores.
-            </Text>
-            <Campo rotulo="Previsto (custo direto)" valor={moeda(resumo.custo_material)} destaque />
-            <Campo rotulo="Previsto com BDI" valor={moeda(resumo.custo_material_com_bdi)} />
-            {obra.area_construida_m2 ? (
-              <Campo
-                rotulo="Material por m² construído"
-                valor={moeda(resumo.custo_material / obra.area_construida_m2)}
-              />
-            ) : null}
-            <Campo
-              rotulo="Composição"
-              valor={`${resumo.qtd_etapas} etapas, ${resumo.qtd_servicos} serviços, ${resumo.qtd_materiais} materiais`}
-            />
-            <Campo rotulo="Comprado" valor="Sem compras registradas" />
-            <Campo rotulo="Projeção ao término" valor="indefinido" />
-          </View>
-
-          <View style={styles.seletor} accessibilityRole="tablist">
-            {MODOS.map((m) => {
-              const ativo = modo === m.chave;
-              return (
-                <Pressable
-                  key={m.chave}
-                  style={[styles.seletorOpcao, ativo && styles.seletorOpcaoAtiva]}
-                  onPress={() => setModo(m.chave)}
-                  accessibilityRole="tab"
-                  accessibilityState={{ selected: ativo }}
-                >
-                  <Text style={[styles.seletorTexto, ativo && styles.seletorTextoAtivo]}>
-                    {m.rotulo}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-
-          {modo === 'depreciacao' ? <ResumoDepreciacao d={depreciacao} /> : null}
-        </>
-      ) : (
-        <Text style={styles.aviso}>Esta obra ainda não tem orçamento cadastrado.</Text>
-      )}
-    </View>
-  );
-}
-
-function CabecalhoServico({ section }) {
-  return (
-    <View style={styles.secao}>
-      {section.primeiroDaEtapa ? <Text style={styles.etapa}>{section.etapa}</Text> : null}
-      <View style={styles.secaoCartao}>
-        <Text style={styles.secaoCodigo}>
-          {section.item} - {section.codigo}
+      <View style={styles.bloco}>
+        <Text style={styles.tituloBloco}>Custo de material</Text>
+        <Text style={styles.nota}>
+          Preços do SINAPI-{obra.sinapi_uf} (tabela de {mesReferencia(obra.sinapi_mes_referencia)}{' '}
+          na criação). Mão de obra, equipamentos e encargos não entram nestes valores.
         </Text>
-        <Text style={styles.secaoTitulo}>{section.descricao}</Text>
-        <View style={styles.linhaEntre}>
-          <Text style={styles.secaoMeta}>{quantidade(section.quantidade, section.unidade)}</Text>
-          <Text style={styles.secaoTotal}>{moeda(section.custoPrevisto)}</Text>
+        <Campo rotulo="Previsto (custo direto)" valor={moeda(resumo.custo_material)} destaque />
+        <Campo
+          rotulo={`Com BDI (${numero(obra.bdi_percentual, 2)}%)`}
+          valor={moeda(resumo.custo_material_com_bdi)}
+        />
+        {obra.area_construida_m2 ? (
+          <Campo
+            rotulo="Material por m² construído"
+            valor={moeda(resumo.custo_material / obra.area_construida_m2)}
+          />
+        ) : null}
+        <Campo
+          rotulo="Composição"
+          valor={`${resumo.qtd_insumos} ${resumo.qtd_insumos === 1 ? 'insumo' : 'insumos'}, ${resumo.qtd_categorias} ${resumo.qtd_categorias === 1 ? 'categoria' : 'categorias'}`}
+        />
+        <Campo rotulo="Comprado" valor="Sem compras registradas" />
+      </View>
+
+      {verItens ? (
+        <View style={styles.seletor} accessibilityRole="tablist">
+          {MODOS.map((m) => {
+            const ativo = modo === m.chave;
+            return (
+              <Pressable
+                key={m.chave}
+                style={[styles.seletorOpcao, ativo && styles.seletorOpcaoAtiva]}
+                onPress={() => setModo(m.chave)}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: ativo }}
+              >
+                <Text style={[styles.seletorTexto, ativo && styles.seletorTextoAtivo]}>
+                  {m.rotulo}
+                </Text>
+              </Pressable>
+            );
+          })}
         </View>
-      </View>
-    </View>
-  );
-}
+      ) : null}
 
-function ItemMaterialDoServico({ item, section }) {
-  return (
-    <View style={styles.item}>
-      <View style={styles.linhaEntre}>
-        <Text style={styles.itemTitulo}>{item.descricao}</Text>
-        <Text style={styles.itemTotal}>{moeda(item.custo_previsto)}</Text>
-      </View>
-      <Text style={styles.itemMeta}>
-        {item.codigo} - coef. {numero(item.coeficiente, 4)} {item.unidade}/{section.unidade}
-        {item.perda_percentual > 0 ? ` - perda ${numero(item.perda_percentual, 0)}%` : ''}
-      </Text>
-      <Text style={styles.itemMeta}>
-        {quantidade(item.quantidade_planejada, item.unidade)} x {moeda(item.preco_unitario)}
-      </Text>
-    </View>
-  );
-}
+      {modo === 'depreciacao' || !verItens ? <ResumoDepreciacao d={depreciacao} /> : null}
 
-function ItemMaterialConsolidado({ item }) {
-  return (
-    <View style={styles.item}>
-      <View style={styles.linhaEntre}>
-        <Text style={styles.itemTitulo}>{item.descricao}</Text>
-        <Text style={styles.itemTotal}>{moeda(item.custo_previsto)}</Text>
-      </View>
-      <Text style={styles.itemMeta}>
-        {item.codigo} - {item.categoria ?? 'Sem categoria'} - em {item.qtd_servicos}{' '}
-        {item.qtd_servicos === 1 ? 'serviço' : 'serviços'}
-      </Text>
-      <View style={styles.linhaEntre}>
-        <Text style={styles.itemMeta}>
-          {quantidade(item.quantidade_planejada, item.unidade)} x {moeda(item.preco_medio)}
-        </Text>
-        <Text style={styles.itemMeta}>{percentual(item.participacao)} do total</Text>
-      </View>
+      {verItens && modo === 'insumos' && podeEditar ? (
+        <Pressable
+          style={({ pressed }) => [styles.botaoAdicionar, pressed && styles.botaoPressionado]}
+          onPress={aoAdicionar}
+          disabled={offline}
+          accessibilityRole="button"
+          accessibilityState={{ disabled: offline }}
+        >
+          <Ionicons name="add" size={20} color={cores.branco} />
+          <Text style={styles.botaoAdicionarTexto}>Adicionar insumo</Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
 
 export default function ObraDetalhe({ route, navigation }) {
   const obraId = route.params?.obraId;
-  const { carregando, erro, obra, resumo, servicos, materiais, depreciacao } =
+  const { temPermissao } = useAuth();
+  const verItens = temPermissao('orcamentos:ver');
+  const podeEditar = temPermissao('orcamentos:editar');
+  const { obra, resumo, insumos, depreciacao, carregando, erro, offline, atualizadoEm, recarregar } =
     useOrcamentoObra(obraId);
-  const { obraAtivaId, selecionarObra } = useObraAtiva();
-  // O Inicio abre direto na aba Depreciacao passando { modo: 'depreciacao' }.
-  const [modo, setModo] = useState(route.params?.modo ?? 'servico');
+  const { obraAtivaId, selecionarObra, recarregarObras } = useObraAtiva();
+  // O Inicio abre direto na Depreciacao passando { modo: 'depreciacao' }.
+  const [modo, setModo] = useState(route.params?.modo ?? 'insumos');
 
   useEffect(() => {
     if (route.params?.modo) setModo(route.params.modo);
   }, [route.params?.modo]);
+
+  // Recarrega ao voltar da tela de adicionar insumo.
+  useFocusEffect(
+    useCallback(() => {
+      recarregar();
+    }, [recarregar])
+  );
 
   // Botao no cabecalho para marcar esta obra como ativa.
   const ativa = obraId === obraAtivaId;
@@ -331,19 +298,16 @@ export default function ObraDetalhe({ route, navigation }) {
     });
   }, [navigation, ativa, obraId, selecionarObra]);
 
-  const secoes = useMemo(() => {
-    if (modo === 'depreciacao') {
-      return depreciacao?.itens.length ? [{ key: 'depreciacao', data: depreciacao.itens }] : [];
-    }
-    if (modo === 'material') {
-      return materiais.length ? [{ key: 'materiais', data: materiais }] : [];
-    }
-    return servicos.map((s, i) => ({
-      ...s,
-      key: s.servicoId,
-      primeiroDaEtapa: i === 0 || servicos[i - 1].etapa !== s.etapa,
-    }));
-  }, [modo, servicos, materiais, depreciacao]);
+  function adicionar() {
+    navigation.navigate('InsumoNovo', { obraId, nomeObra: obra.nome });
+  }
+
+  function remover(item) {
+    confirmarRemocao(item, obra.nome, async () => {
+      await removerInsumo(obraId, item.id);
+      await Promise.all([recarregar(), recarregarObras()]);
+    });
+  }
 
   if (carregando) {
     return (
@@ -353,64 +317,65 @@ export default function ObraDetalhe({ route, navigation }) {
     );
   }
 
-  if (erro) {
+  if (erro || !obra) {
     return (
       <View style={styles.container}>
-        <Text style={styles.aviso}>Não foi possível ler o orçamento: {String(erro.message ?? erro)}</Text>
+        <Text style={styles.aviso}>
+          {erro ? `Não foi possível ler a obra: ${String(erro.message ?? erro)}` : 'Obra não encontrada.'}
+        </Text>
       </View>
     );
   }
 
-  if (!obra) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.aviso}>Obra não encontrada.</Text>
-      </View>
-    );
-  }
+  const lista = !verItens ? [] : modo === 'insumos' ? insumos : (depreciacao?.itens ?? []);
 
   return (
-    <SectionList
+    <FlatList
       style={styles.container}
       contentContainerStyle={styles.conteudo}
-      sections={secoes}
+      data={lista}
       keyExtractor={(item) => item.id}
-      stickySectionHeadersEnabled={false}
+      refreshing={false}
+      onRefresh={recarregar}
+      ItemSeparatorComponent={modo === 'insumos' ? () => <View style={styles.separador} /> : null}
       ListHeaderComponent={
-        <Cabecalho
-          obra={obra}
-          resumo={resumo}
-          depreciacao={depreciacao}
-          modo={modo}
-          setModo={setModo}
-        />
+        <>
+          <Cabecalho
+            obra={obra}
+            resumo={resumo}
+            depreciacao={depreciacao}
+            offline={offline}
+            atualizadoEm={atualizadoEm}
+            verItens={verItens}
+            podeEditar={podeEditar}
+            modo={modo}
+            setModo={setModo}
+            aoAdicionar={adicionar}
+          />
+          {verItens && lista.length > 0 ? (
+            <Text style={[styles.nota, styles.notaLista]}>
+              {modo === 'insumos'
+                ? 'Do maior para o menor custo.'
+                : 'Por material, do maior para o menor impacto em reais.'}
+            </Text>
+          ) : null}
+        </>
       }
-      renderSectionHeader={({ section }) =>
-        modo === 'servico' ? (
-          <CabecalhoServico section={section} />
-        ) : modo === 'depreciacao' ? (
-          <Text style={[styles.nota, styles.notaLista]}>
-            Por material, do maior para o menor impacto em reais.
-          </Text>
+      renderItem={({ item }) =>
+        modo === 'insumos' ? (
+          <ItemInsumo
+            item={item}
+            aoRemover={podeEditar && !offline ? () => remover(item) : undefined}
+          />
         ) : (
-          <Text style={styles.nota}>
-            Cada material somado em todos os serviços em que aparece, do maior
-            para o menor custo.
-          </Text>
-        )
-      }
-      renderItem={({ item, section }) =>
-        modo === 'servico' ? (
-          <ItemMaterialDoServico item={item} section={section} />
-        ) : modo === 'depreciacao' ? (
           <ItemDepreciacao item={item} mesAtual={depreciacao?.mesAtual} />
-        ) : (
-          <ItemMaterialConsolidado item={item} />
         )
       }
       ListEmptyComponent={
-        resumo && modo !== 'depreciacao' ? (
-          <Text style={styles.aviso}>Orçamento sem itens de material.</Text>
+        verItens && modo === 'insumos' ? (
+          <Text style={styles.aviso}>
+            Nenhum insumo nesta obra.{podeEditar ? ' Toque em "Adicionar insumo" para começar.' : ''}
+          </Text>
         ) : null
       }
     />

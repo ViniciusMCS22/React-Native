@@ -54,6 +54,15 @@ export const marca = {
   sombraVidro: 'rgba(11, 123, 227, 0.35)',
 };
 
+// Acoes destrutivas ("Zona de perigo" da aba Mais, apagar obra).
+// EXCECAO a regra do topo, aprovada para este caso: usa o mesmo vermelho do
+// semaforo, porque "perigo / irreversivel" e o mesmo sentido de "critico".
+// Sempre junto com icone de alerta e texto (RNF23); nunca em outro lugar.
+export const perigo = {
+  cor: '#B3261E',
+  fundo: '#FBE6E4',
+};
+
 // Semaforo. Cada status carrega cor, fundo, rotulo e icone porque o RNF23
 // proibe depender apenas da cor. Nunca use `cor` sem `rotulo` ou `icone`.
 export const semaforo = {

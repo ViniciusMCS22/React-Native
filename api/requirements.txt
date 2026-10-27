@@ -3,3 +3,5 @@ uvicorn[standard]>=0.32
 sqlalchemy>=2.0.36
 pyjwt>=2.10
 bcrypt>=4.2
+# Leitura das planilhas do SINAPI (app/importar_sinapi.py)
+openpyxl>=3.1
